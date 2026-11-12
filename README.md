@@ -112,6 +112,14 @@ one:
 > Windows may say *"Windows protected your PC"* the first time, because this early version isn't
 > code-signed yet. Click **More info**, then **Run anyway**.
 
+Or with [WinGet](https://learn.microsoft.com/windows/package-manager/winget/), Windows' package
+manager: in a terminal, the first line installs MDM and the second updates it.
+
+```
+winget install AhmedNefzaoui.MisterDownloadManager
+winget upgrade AhmedNefzaoui.MisterDownloadManager
+```
+
 ### On Linux
 
 MDM runs on Linux too, tested on Ubuntu 24.04, Debian 12 and Fedora with GNOME, KDE Plasma, Xfce
@@ -355,7 +363,12 @@ working, not a copy of anyone's software.
 <details>
 <summary><b>Build from source</b></summary>
 
-Requires Rust stable 1.95 or later (the MSVC toolchain on Windows).
+Requires Rust stable 1.98 or later (the MSVC toolchain on Windows), and for the engine's
+browser-like connection (BoringSSL, built from source): CMake, LLVM's libclang and, on Windows,
+NASM (`winget install Kitware.CMake LLVM.LLVM NASM.NASM`; on Linux `cmake` and
+`libclang-dev`; on macOS Xcode's command line tools and `cmake`).
+`cargo build -p mdm-app --no-default-features` builds the app without it (a site that refuses MDM's
+own connection then stays refused).
 
 ```
 cargo build --release

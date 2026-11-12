@@ -395,10 +395,21 @@ pub struct Item {
     /// Content-Disposition), as a browser does (#28). Cleared once the file is made.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub name_from_url: bool,
+    /// Its name was given without waiting for its folder to be looked at (Download File Info:
+    /// a sleeping drive or a network folder can take seconds to answer, #743): nothing of its
+    /// own is on the disk yet, and it starts under that name or the next free numbered one, as
+    /// the engine finds as it starts (`Destination::Free`). Cleared once the file is made.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub number_at_start: bool,
     /// The Link grabber package it came in (#37): its archives are extracted together once
     /// every volume is there.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub package: Option<PackageTag>,
+    /// The downloads it was added with (a playlist, a batch, Link grabber's links, #766): the
+    /// first one's id. They show one summary once all are done, not a Download complete window
+    /// each; cleared once it was summed up. None for a download added alone.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group: Option<u64>,
     /// Where its server was, as its last run saw it (#140): Properties shows it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub server: Option<crate::whereis::Seen>,
@@ -437,6 +448,10 @@ pub struct Item {
     /// #68), in the interface language; memory only.
     #[serde(skip)]
     pub notices: Vec<String>,
+    /// A video chosen in the browser's quality menu: the menu's look-up, for its first run only
+    /// (taken then); memory only, never written (its links are signed).
+    #[serde(skip)]
+    pub preloaded: Option<mdm_tools::video::Preloaded>,
     /// Finished video / subtitle / gallery paths waiting to be marked as downloaded from the
     /// web once any deferred rename in `App::poll` has moved them to their final names.
     #[serde(skip)]
@@ -510,7 +525,9 @@ pub struct GallerySpec {
 }
 
 /// A helper's progress (yt-dlp's, gallery-dl's) as the engine's view: one segment when its size
-/// is known, no connections, its notes as events.
+/// is known, no connections, its notes as events. A video whose streams MDM's engine downloads
+/// (#769) shows the engine's own: the streams' segments one after another, the connections of
+/// the one under way, its server.
 fn tool_snapshot(p: mdm_tools::video::Progress, url: &Url) -> mdm_engine::Snapshot {
     use mdm_tools::video::State as V;
     let (state, file, error) = match p.state {
@@ -520,6 +537,19 @@ fn tool_snapshot(p: mdm_tools::video::Progress, url: &Url) -> mdm_engine::Snapsh
         V::Stopped => (State::Cancelled, None, None),
     };
     let size = p.total;
+    let engine = p.engine.unwrap_or_default();
+    let segments = if engine.segments.is_empty() {
+        size.map(|t| {
+            vec![mdm_engine::download::SegmentView {
+                start: 0,
+                cursor: p.downloaded.min(t),
+                end: t,
+            }]
+        })
+        .unwrap_or_default()
+    } else {
+        engine.segments
+    };
     mdm_engine::Snapshot {
         state,
         url: url.clone(),
@@ -527,16 +557,8 @@ fn tool_snapshot(p: mdm_tools::video::Progress, url: &Url) -> mdm_engine::Snapsh
         size,
         downloaded: p.downloaded,
         resumable: Some(true),
-        segments: size
-            .map(|t| {
-                vec![mdm_engine::download::SegmentView {
-                    start: 0,
-                    cursor: p.downloaded.min(t),
-                    end: t,
-                }]
-            })
-            .unwrap_or_default(),
-        connections: Vec::new(),
+        segments,
+        connections: engine.connections,
         error,
         failure: None,
         events: p
@@ -549,8 +571,9 @@ fn tool_snapshot(p: mdm_tools::video::Progress, url: &Url) -> mdm_engine::Snapsh
                 text: text.clone(),
             })
             .collect(),
-        // yt-dlp's and gallery-dl's connections are theirs: not seen here (#140).
-        server: None,
+        // yt-dlp's and gallery-dl's connections are theirs: not seen here (#140); the engine's
+        // are (#769).
+        server: engine.server,
         at_service: None,
     }
 }
@@ -577,14 +600,27 @@ impl Job {
         }
     }
 
-    /// The speed limit can change while a file downloads; yt-dlp takes it at the start; a
-    /// torrent's applies to the whole torrent session.
+    /// A helper program downloads it, and takes a speed limit only as it starts, so a new limit
+    /// starts it again (#708, `App::reapply_helper_limits`): gallery-dl, and yt-dlp for a video
+    /// MDM's engine doesn't download (#769: a live stream, RTMP…).
+    pub fn is_helper(&self) -> bool {
+        match self {
+            Job::Video { job, .. } => job.helper().is_some(),
+            Job::Gallery { job, .. } => job.on_helper(),
+            _ => false,
+        }
+    }
+
+    /// The speed limit can change while a file downloads, and while the engine downloads a
+    /// video's streams (#769); gallery-dl, and yt-dlp downloading by itself, take it at the start
+    /// (the app starts them again, `is_helper`); a torrent's applies to the whole torrent session.
     pub fn set_speed_limit(&self, rate: Option<u64>) {
         match self {
             Job::File(d) => d.set_speed_limit(rate),
             Job::Torrent(t) => t.set_speed_limit(rate),
             Job::Remote(r) => r.set_speed_limit(rate),
-            Job::Video { .. } | Job::Gallery { .. } => {}
+            Job::Video { job, .. } => job.set_speed_limit(rate),
+            Job::Gallery { job, .. } => job.set_speed_limit(rate),
         }
     }
 
@@ -592,7 +628,9 @@ impl Job {
         match self {
             Job::File(d) => d.speed_limit(),
             Job::Torrent(t) => t.speed_limit(),
-            Job::Remote(_) | Job::Video { .. } | Job::Gallery { .. } => None,
+            Job::Video { job, .. } => job.speed_limit(),
+            Job::Gallery { job, .. } => job.speed_limit(),
+            Job::Remote(_) => None,
         }
     }
 }
@@ -709,6 +747,22 @@ impl Item {
             .join("\n")
     }
 
+    /// What tells where this row's files are (its place, its kind, the files it wrote), for a
+    /// look at the disk on a thread other than the window's (#743): no live download, no log.
+    pub fn place_copy(&self) -> Item {
+        let mut c = Item::new(self.id, self.url.clone(), self.dest.clone(), self.category);
+        c.file_name.clone_from(&self.file_name);
+        c.status = self.status;
+        c.downloaded = self.downloaded;
+        c.video.clone_from(&self.video);
+        c.torrent.clone_from(&self.torrent);
+        c.gallery.clone_from(&self.gallery);
+        c.remote.clone_from(&self.remote);
+        c.preexisting_folder = self.preexisting_folder;
+        c.written_files.clone_from(&self.written_files);
+        c
+    }
+
     /// A new, not yet started download (queued state, nothing on disk).
     pub fn new(id: u64, url: Url, dest: PathBuf, category: Category) -> Self {
         Item {
@@ -735,7 +789,9 @@ impl Item {
             gallery: None,
             log: Vec::new(),
             name_from_url: false,
+            number_at_start: false,
             package: None,
+            group: None,
             server: None,
             direct: false,
             remote: None,
@@ -747,6 +803,7 @@ impl Item {
             login: None,
             context: Default::default(),
             notices: Vec::new(),
+            preloaded: None,
             pending_mark: None,
             written_files: None,
         }
@@ -789,8 +846,9 @@ impl Item {
         self.size = size_after(s.state, s.size, s.downloaded, self.size);
         self.resumable = s.resumable.or(self.resumable);
         if let Some(f) = &s.file {
-            // Named now: a later start from scratch keeps this name.
+            // Named now: a later start from scratch keeps this name, and its file is its own.
             let guessed = std::mem::take(&mut self.name_from_url);
+            self.number_at_start = false;
             if *f != self.dest {
                 // The file as saved (a video's real extension, a numbered duplicate, the name
                 // the server gave).
@@ -917,6 +975,18 @@ impl Item {
                 true
             }
             None => false,
+        }
+    }
+
+    /// Why yt-dlp downloads this running video itself (#769), once it has found out: MDM's engine
+    /// downloads every other one.
+    pub fn video_helper(&self) -> Option<mdm_tools::streams::Helper> {
+        match &self.live {
+            Some(Live {
+                dl: Job::Video { job, .. },
+                ..
+            }) => job.helper(),
+            _ => None,
         }
     }
 
