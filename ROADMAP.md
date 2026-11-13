@@ -557,6 +557,9 @@ Bug fixes from the first days of 0.5.0, a Safari extension, and more file types.
 
 These ship in the next version.
 
+- ✅ Touch screens: a tap on a menu's item chooses it (the menu bar's, right-click menus,
+  drop-downs), where only a mouse could
+  ([#733](https://github.com/anefzaoui/misterdownloadmanager/issues/733))
 - ✅ A video's Address is its file's (the stream MDM downloads) in the progress window, Download
   complete and File Properties, its page the web page it was obtained from; a download's page and
   Referer are kept after a restart
