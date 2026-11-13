@@ -227,6 +227,11 @@
 #. {name} = a file name (keep the braces as they are)
 #, machine
 	A file of this torrent can't be saved safely: {name}	Datoteka ovog torrenta ne može se sigurno spremiti: {name}
+#. message or event log entry in the main window
+#. Link grabber added a magnet link whose torrent could not be found; {error} says why
+#. {error} = an error message (keep the braces as they are)
+#, machine
+	A magnet link's files could not be looked up: {error}	Nije moguće pronaći datoteke magnetne veze: {error}
 #. text in the settings
 #. Options → DNS: the NextDNS configuration ID typed isn't one
 #, machine
@@ -270,6 +275,11 @@
 #. a download's server's round trip: {ms} a number of milliseconds, {reach} near, medium or far
 #, machine
 	about {ms} ms ({reach})	oko {ms} ms ({reach})
+#. text in the Download video window
+#. a file size that is only an estimate, as a screen reader says it in the Download video window's list of qualities; {size} is "532 MB"
+#. {size} = a file size such as "4.2 MB" (keep the braces as they are)
+#, machine
+	about {size}	oko {size}
 #. checkbox in the Add torrent window
 #. Torrent settings: other peers may connect to this computer
 #, machine
@@ -301,6 +311,10 @@
 #. text in the tray icon's menu
 #, machine
 	Add batch download	Dodaj skupno preuzimanje
+#. message or event log entry in the main window; text in the tray icon's menu
+#. title of the note when Tasks → Add batch download from clipboard finds nothing to download
+#, machine
+	Add batch download from clipboard	Dodaj skupno preuzimanje iz međuspremnika
 #. text in the Options window
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -946,6 +960,10 @@
 #. column title: the peer's torrent program
 #, machine
 	Client	Klijent
+#. message or event log entry in the main window
+#. Link grabber: where the links came from: the clipboard (Tasks → Add batch download from clipboard)
+#, machine
+	Clipboard	Međuspremnik
 #. text in the Options window
 #, machine
 	Clock:	Sat:
@@ -1060,6 +1078,20 @@
 #. {error} = an error message (keep the braces as they are)
 #, machine
 	Could not be read: {error}	Nije moguće pročitati: {error}
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: the proxy set in Options ({proxy}, its address) didn't let MDM connect
+#, machine
+	could not connect through the proxy {proxy}	nije se moguće povezati putem proxy poslužitelja {proxy}
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: its server ({host}) couldn't be reached
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	could not reach {host}	nije moguće uspostaviti vezu s poslužiteljem {host}
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: its server ({host}) couldn't be reached, for the system's reason {cause}
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	could not reach {host} ({cause})	nije moguće uspostaviti vezu s poslužiteljem {host} ({cause})
 #. text in extracting archives (a download's log, the Archive password window)
 #. in a download's log: {name} is the archive's file name, {why} the reason
 #. {name} = a file name (keep the braces as they are)
@@ -1332,6 +1364,9 @@
 #. Options → Accounts: checkbox: links of the file hosts these services support are downloaded through the accounts
 #, machine
 	Download supported file-host links through these accounts	Preuzmi podržane veze davatelja datoteka putem ovih računa
+#. what a keyboard shortcut does in the Help menu's windows (About, updates, shortcuts, Tell a friend)
+#, machine
+	Download the links in the clipboard (Add batch download from clipboard)	Preuzmi veze iz međuspremnika (Dodaj skupno preuzimanje iz međuspremnika)
 #. text in a dialog box
 #. Download File Info: a check box, ticked when the download goes through the user's debrid account; {service} the service and the account, "Real-Debrid (labuser)". Unticked: downloaded directly
 #, machine
@@ -1383,6 +1418,11 @@
 #. the trailing ... means it is still going on: keep it
 #, machine
 	Downloading and verifying yt-dlp...	Preuzimanje i provjera yt-dlp-a...
+#. text in helpers.rs
+#. Video helpers: MDM's own yt-dlp is being downloaded
+#. the trailing ... means it is still going on: keep it
+#, machine
+	Downloading MDM's own copy...	Preuzimanje MDM-ove kopije...
 #. text in the Help menu's windows (About, updates, shortcuts, Tell a friend)
 #. Check for updates, while Update now downloads; {percent} like "42%"
 #, machine
@@ -1423,6 +1463,12 @@
 #. tooltip of the handle in Download complete: drag it to drop the downloaded file somewhere
 #, machine
 	Drag the file into a folder or an app	Povucite datoteku u mapu ili aplikaciju
+#. message or event log entry in the main window
+#, machine
+	Dragged out of Download complete and moved to a place MDM couldn't learn	Izvučeno iz „Preuzimanje dovršeno” i premješteno na mjesto koje MDM nije mogao saznati.
+#. message or event log entry in the main window
+#, machine
+	Dragged out of Download complete and moved to {folder}	Izvučeno iz „Preuzimanje dovršeno” i premješteno u {folder}.
 #. message or event log entry in the main window
 #. in Import, where the addresses came from: dragged onto the window
 #, machine
@@ -1472,6 +1518,10 @@
 #. button in the Help menu's windows (About, updates, shortcuts, Tell a friend)
 #, machine
 	Email	E-pošta
+#. text in the Download video window
+#. checkbox in Download video: the chapters a video's page lists (YouTube's, for one) go into the video file, where players show them and skip between them
+#, machine
+	Embed chapters	Ugradi poglavlja
 #. text in gallerydlg.rs
 #. in Download a gallery, after the "Files at most" box
 #, machine
@@ -1512,7 +1562,7 @@
 #. a country's name (where a download's server is)
 #, machine
 	Eritrea	Eritreja
-#. text in a dialog box; item in the Categories tree in the download list; value in a column's filter list in the download list; text in the download list (sizes, speeds, status); text in remote.rs
+#. text in a dialog box; item in the Categories tree in the download list; value in a column's filter list in the download list; text in the download list (sizes, speeds, status); text in a download's progress window; text in remote.rs
 #. in Download File Info, where the size goes: the address didn't answer
 #. a download's status (state it is in, not a command)
 #. a download's status (state it is in, not a command): it failed
@@ -1578,6 +1628,10 @@
 #. message or event log entry in the main window; text in the Options window
 #, machine
 	Export	Izvoz
+#. button in the Options window
+#. the trailing ... means it opens a window: keep it
+#, machine
+	Export...	Izvezi...
 #. text in the Options window
 #, machine
 	Extend the availability of Manifest 2 Chrome extensions	Proširite dostupnost Manifest 2 Chrome proširenja
@@ -1652,6 +1706,10 @@
 #. noun: a file of no known type
 #, machine
 	File	Datoteka
+#. text in the Options window
+#. tooltip of "Mark downloaded files as coming from the internet" on Linux
+#, machine
+	File managers show where the files marked this way came from. Unticked, no download is marked.	Upravitelji datoteka prikazuju odakle potječu tako označene datoteke. Ako potvrdni okvir nije označen, nijedno preuzimanje nije označeno.
 #. text in the Scheduler window
 #, machine
 	File Name	Naziv datoteke
@@ -1988,7 +2046,7 @@
 #. window title: where MDM takes its helper programs (yt-dlp, ffmpeg, gallery-dl) from
 #, machine
 	Helpers	Pomoćnici
-#. button in gallerydlg.rs; button in the Download video window
+#. text in errors.rs; button in gallerydlg.rs; button in the Download video window
 #. button in Download video: where MDM takes yt-dlp and ffmpeg from
 #. the trailing ... means it opens a window: keep it
 #, machine
@@ -2038,6 +2096,11 @@
 #. button in Test browser integration: open the help page's section for the problem
 #, machine
 	How to fix it	Kako to popraviti
+#. text in the Download video window; text in videolookup.rs
+#. link after the note that YouTube needs a JavaScript runtime: opens the help page that says how to install Node.js or Deno
+#. link in the browser's video menu, after the note that YouTube needs a JavaScript runtime: opens the help page that says how to install Node.js or Deno
+#, machine
+	How to install one	Kako ga instalirati
 #. checkbox in the Options window
 #, machine
 	http	http
@@ -2071,6 +2134,10 @@
 #. message or event log entry in the main window; text in the Options window
 #, machine
 	Import	Uvezi
+#. button in the Options window
+#. the trailing ... means it opens a window: keep it
+#, machine
+	Import...	Uvezi...
 #. value in a column's filter list in the download list
 #, machine
 	In a queue	U redu čekanja
@@ -2368,7 +2435,7 @@
 #. Torrent settings: an upload speed limit for all torrents together, followed by a box with the speed and "KBytes/sec"
 #, machine
 	Limit uploading for all torrents to	Ograniči slanje za sve torrente na
-#. window title in the Link grabber window; group box title in the Options window
+#. message or event log entry in the main window; window title in the Link grabber window; group box title in the Options window
 #. Options → Archives: group box title
 #, machine
 	Link grabber	Link grabber
@@ -2445,6 +2512,10 @@
 #. crash report window: looking on GitHub for an issue about the same problem
 #, machine
 	Looking for this problem on GitHub…	Traženje ovog problema na GitHubu…
+#. text in the Options window
+#. the trailing ... means it is still going on: keep it
+#, machine
+	Looking for your default browser...	Traženje zadanog preglednika...
 #. text in the Download video window
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -2457,10 +2528,18 @@
 #. a country's name (where a download's server is)
 #, machine
 	Macau	Makao
+#. text in the Options window
+#. tooltip of "Mark downloaded files as coming from the internet" on macOS
+#, machine
+	macOS checks the files marked this way: Gatekeeper before a program first opens. Unticked, no download is marked.	macOS provjerava tako označene datoteke: Gatekeeper to čini prije prvog pokretanja programa. Ako potvrdni okvir nije označen, nijedno preuzimanje nije označeno.
 #. text in countries.rs
 #. a country's name (where a download's server is)
 #, machine
 	Madagascar	Madagaskar
+#. text in the Link grabber window
+#. Link grabber, a link's status: a magnet link (a torrent, its files looked up once it is added)
+#, machine
+	Magnet link	Magnetna veza
 #. message or event log entry in the main window
 #, machine
 	Main download queue	Glavni red čekanja za preuzimanje
@@ -2504,6 +2583,9 @@
 #. text in the Scheduler window
 #, machine
 	March	ožujak
+#. checkbox in the Options window
+#, machine
+	Mark downloaded files as coming from the internet	Označi preuzete datoteke kao datoteke s interneta
 #. text in countries.rs
 #. a country's name (where a download's server is)
 #, machine
@@ -2742,6 +2824,10 @@
 #. a country's name (where a download's server is)
 #, machine
 	Mozambique	Mozambik
+#. text in the Download video window
+#. why "Embed chapters" is greyed in Download video: the choice is a sound converted to MP3, Opus or FLAC, which MDM saves without chapters
+#, machine
+	MP3, Opus and FLAC files are saved without chapters	MP3, Opus i FLAC datoteke spremaju se bez poglavlja
 #. text in errors.rs
 #, machine
 	much slower than the other connections; reconnecting	mnogo sporije od ostalih veza; ponovno povezivanje
@@ -2883,6 +2969,9 @@
 #. tooltip on the Scheduler's weekdays when none is ticked
 #, machine
 	No day is ticked: the queue will not start	Nijedan dan nije označen: red čekanja se neće pokrenuti
+#. message or event log entry in the main window
+#, machine
+	No download links were found in the clipboard. Copy a text with http, https, ftp or magnet links in it, and try again.	U međuspremniku nisu pronađene veze za preuzimanje. Kopirajte tekst s http, https, ftp ili magnet vezama i pokušajte ponovno.
 #. message or event log entry in the main window
 #. title in the empty download list (this category or queue has no downloads)
 #, machine
@@ -3158,11 +3247,16 @@
 #. verb: opens the file
 #, machine
 	Open	Otvori
-#. button in crashui.rs; button in a dialog box; button in torrentfiles.rs
+#. button in crashui.rs; button in a dialog box; text in a dialog box; button in torrentfiles.rs
 #. crash report window button: show the report's file in its folder
+#. title of the message when the folder of a downloaded file can't be shown
 #. button that opens the torrent's containing folder in the file manager
 #, machine
 	Open folder	Otvori mapu
+#. text in a download's progress window
+#. button in a download's progress window when the site sent a web page (a waiting page, a captcha) instead of the file: opens the download's link in the web browser
+#, machine
+	Open in browser	Otvori u pregledniku
 #. checkbox in the Add torrent window
 #, machine
 	Open magnet links and .torrent files with Mister Download Manager	Otvori magnetne veze i .torrent datoteke pomoću programa Mister Download Manager
@@ -3400,7 +3494,7 @@
 #. text in a download's progress window
 #, machine
 	Property	Svojstvo
-#. text in the Options window
+#. text in errors.rs; text in the Options window
 #. tab title
 #, machine
 	Proxy / Socks	Proxy / SOCKS
@@ -3973,6 +4067,7 @@
 #, machine
 	Size	Veličina
 #. text in the Download video window
+#. the video's file size is not known
 #, machine
 	size unknown	nepoznata veličina
 #. text in a download's Properties window
@@ -4346,6 +4441,9 @@
 #. Options → Remote → Status: the settings were changed; they apply on OK
 #, machine
 	The changes apply when you click OK.	Promjene se primjenjuju kada kliknete U redu.
+#. message or event log entry in the main window
+#, machine
+	The clipboard holds no text. Copy some links, or a text with links in it, and try again.	Međuspremnik ne sadrži tekst. Kopirajte neke veze ili tekst s vezama i pokušajte ponovno.
 #. text in the Help menu's windows (About, updates, shortcuts, Tell a friend)
 #. Tell a friend: Copy failed (another program holds the clipboard)
 #, machine
@@ -4387,6 +4485,11 @@
 #, machine
 	the connection closed before the part was complete	veza je prekinuta prije nego što je dio dovršen
 #. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: the connection to its server ({host}) was cut as it opened
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	the connection to {host} was cut: a firewall, or a network that blocks it	veza s {host} je prekinuta: vatrozid ili mreža koja je blokira
+#. text in errors.rs
 #, machine
 	the connection was lost while receiving data	veza je izgubljena tijekom primanja podataka
 #. text in the Add torrent window
@@ -4396,6 +4499,11 @@
 #. text in errors.rs
 #, machine
 	the disk is full	disk je pun
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: the connection to its server ({host}) closed before all of it came
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	the download from {host} was cut short	preuzimanje s poslužitelja {host} prekinuto je prije dovršetka
 #. tooltip (why a control is greyed) in a download's Properties window
 #. tooltip of the greyed Open button in File Properties
 #, machine
@@ -4537,6 +4645,11 @@
 #. an FTPS (or other TLS) connection could not be secured
 #, machine
 	the secure connection failed	Sigurna veza nije uspjela
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: the secure connection to its server ({host}) failed, usually because an antivirus or a proxy reads secure (HTTPS) connections with a certificate of its own
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	the secure connection to {host} failed: an antivirus's web filter or a proxy may be reading HTTPS	sigurna veza s {host} nije uspjela: web-filtar antivirusa ili proxy možda čita HTTPS
 #. text in a dialog box
 #. \\n starts a new line: break lines where they fit the translation
 #, machine
@@ -4558,10 +4671,11 @@
 	the server is busy ({status}); try again later	poslužitelj je zauzet ({status}); pokušajte ponovno kasnije
 #. text in errors.rs
 #, machine
-	the server sent a web page instead of the file (sign-in needed or the link expired?)	poslužitelj je poslao web-stranicu umjesto datoteke (potrebna prijava ili je veza istekla?)
-#. text in errors.rs
-#, machine
 	the server sent an unexpected part of the file ({detail})	poslužitelj je poslao neočekivani dio datoteke ({detail})
+#. text in errors.rs
+#. why a download failed (#701): a file host answered with its own web page (a countdown before the link, a captcha, a sign-in) where the file was expected. The browser gets past it; MDM's browser extension then hands the real file back to MDM
+#, machine
+	the site sent a web page instead of the file (a waiting page, a captcha or a sign-in): open the link in your browser, finish there, and the download comes back to MDM	Web-mjesto je poslalo web-stranicu umjesto datoteke (stranicu za čekanje, CAPTCHA-u ili prijavu): otvorite vezu u pregledniku, dovršite tamo i preuzimanje će se vratiti u MDM
 #. text in the Download video window
 #. the Download video window: the site asked for a sign-in although the browser's extension passed the page's cookies
 #, machine
@@ -4738,6 +4852,7 @@
 #, machine
 	This name is reserved by Windows	Ovaj je naziv rezerviran za Windows
 #. tooltip (why a control is greyed) in the Download video window
+#. why "Embed chapters" is greyed: ffmpeg (a helper program) is not installed
 #. why "Put them into the video" is greyed: ffmpeg (a helper program) is not installed
 #, machine
 	This needs ffmpeg	Za ovo je potreban ffmpeg
@@ -5076,7 +5191,7 @@
 #. text in the Options window
 #, machine
 	Use advanced browser integration	Koristi naprednu integraciju preglednika
-#. button in helpers.rs
+#. text in errors.rs; button in helpers.rs
 #. Video helpers: button: pick a program (yt-dlp or ffmpeg) already on the computer
 #. the trailing ... means it opens a window: keep it
 #, machine
@@ -5176,6 +5291,7 @@
 #, machine
 	Verify checksum	Provjeri kontrolni zbroj
 #. text in the download list (sizes, speeds, status)
+#. a download's status while the finished file is checked against its checksum
 #. the trailing ... means it is still going on: keep it
 #, machine
 	Verifying...	Provjeravam...
@@ -5287,6 +5403,10 @@
 #, machine
 	Windows allows wake timers only while plugged in	Windows dopušta mjerače vremena buđenja samo dok je priključen
 #. text in the Options window
+#. tooltip of "Mark downloaded files as coming from the internet" on Windows
+#, machine
+	Windows checks the files marked this way: SmartScreen before a program first runs, Office's Protected View before a document opens. Unticked, or under Windows' policy "Do not preserve zone information in file attachments", no download is marked.	Windows provjerava datoteke označene na ovaj način: SmartScreen prije prvog pokretanja programa, zaštićeni prikaz sustava Office prije otvaranja dokumenta. Ako nije označeno ili prema pravilima sustava Windows „Ne zadržavaj informacije o zoni u privicima datoteka”, nijedno preuzimanje nije označeno.
+#. text in the Options window
 #. Options → Accounts: Windows Credential Manager didn't answer, so the sign-ins stay in MDM's settings, encrypted so that only this Windows account can read them
 #, machine
 	Windows Credential Manager didn't answer, so sign-ins and passwords are kept in MDM's settings, encrypted for your Windows account.	Upravitelj vjerodajnica sustava Windows nije odgovorio, pa se podaci za prijavu i lozinke čuvaju u postavkama MDM-a, šifriranim za vaš Windows račun.
@@ -5396,6 +5516,10 @@
 #. Video helpers (macOS, Linux): {path} = the system's ffmpeg
 #, machine
 	Your system's: {path}	Vaš sustav: {path}
+#. text in the Download video window
+#. in Download video and the browser's video menu: yt-dlp had no JavaScript runtime, so YouTube listed only some qualities (often only the sound); Node.js and Deno are program names
+#, machine
+	YouTube needs a JavaScript runtime to list its video qualities: install Node.js or Deno, then look it up again	YouTubeu je potrebno JavaScript okruženje za prikaz kvalitete videozapisa: instalirajte Node.js ili Deno, a zatim ga ponovno potražite
 #. text in the Download video window
 #. the Download video window: yt-dlp couldn't read the cookies of the browser chosen in Options (Chrome, Edge...), which holds them while it runs; {browser} = its name
 #, machine
@@ -5530,6 +5654,14 @@
 #. text in a dialog box
 #, machine
 	{file} is no longer where it was saved (moved or deleted). Redownload, in its right-click menu, gets it again.	{file} više nije na mjestu na koje je spremljena (premještena je ili izbrisana). Ponovno preuzimanje u kontekstnom izborniku ponovno će je preuzeti.
+#. message or event log entry in the main window
+#. Import refused a file; {size} = its size and {limit} = the largest Import reads, like "4.50 GB" and "64.00 MB"
+#. {size} = a file size such as "4.2 MB" (keep the braces as they are)
+#, machine
+	{file} is too large to be a list of addresses ({size}). Import reads text files, web pages and .ef2 exports of up to {limit}.	{file} je prevelik da bi bio popis adresa ({size}). Uvoz čita tekstualne datoteke, web-stranice i .ef2 izvoze do {limit}.
+#. text in a dialog box
+#, machine
+	{file} was moved elsewhere by dragging it out of Download complete, and MDM couldn't learn where. Look for it where you dropped it.	Datoteka {file} premještena je drugamo povlačenjem iz „Preuzimanje dovršeno”, a MDM nije mogao saznati gdje. Potražite je tamo gdje ste je ispustili.
 #. text in the Checksum window
 #. {algorithm} = a checksum algorithm such as "SHA-256" (keep the braces as they are)
 #, machine
@@ -5548,6 +5680,35 @@
 #. {size} = a file size such as "4.2 MB" (keep the braces as they are)
 #, machine
 	{have} of {total} pieces ({size} each)	{have} od {total} dijelova ({size} svaki)
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: its server ({host}) answered with an HTTP error ({status}, such as "404 Not Found")
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	{host} answered {status}	poslužitelj {host} odgovorio je s {status}
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: its server's name ({host}, such as api.github.com) wasn't found
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	{host} could not be found: no connection, or a network that blocks it	{host} nije pronađen: nema veze ili mreža koja je blokira
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: there is no way to its server ({host}); the network may be down
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	{host} could not be reached: check the connection	nije moguće uspostaviti vezu s poslužiteljem {host}: provjerite vezu
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: its server ({host}) didn't answer in time
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	{host} did not answer in time	poslužitelj {host} nije odgovorio na vrijeme
+#. text in errors.rs
+#. a helper (yt-dlp, ffmpeg) couldn't be downloaded: its server ({host}) or something on the way refused the connection
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	{host} refused the connection: a firewall, or a network that blocks it	{host} je odbio vezu: vatrozid ili mreža koja je blokira
+#. text in errors.rs
+#. {host} = a server name such as "example.com" (keep the braces as they are)
+#, machine
+	{host} refused the request ({status}): too many requests from your network for now	{host} je odbio zahtjev ({status}): previše zahtjeva s vaše mreže za sada
 #. text in the download list (sizes, speeds, status)
 #. {h} = hours; {m} = minutes (keep the braces as they are)
 #, machine
@@ -5625,9 +5786,21 @@
 #. a torrent's status while the user's debrid service downloads it, before MDM gets its files; {service} the service ("Real-Debrid"), {percent} how far it is ("45%")
 #, machine
 	{percent} at {service}	{percent} na usluzi {service}
+#. text in the download list (sizes, speeds, status)
+#. the list's narrow Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%": keep it first, the column is narrow
+#, machine
+	{percent} merged	{percent} spojeno
+#. text in the download list (sizes, speeds, status)
+#. the list's narrow Status column while the finished file is checked against its checksum; {percent} how much is checked, e.g. "45%": keep it first, the column is narrow
+#, machine
+	{percent} verified	{percent} provjereno
 #. text in errors.rs
 #, machine
 	{problem} ({cause})	{problem} ({cause})
+#. text in errors.rs
+#. why a helper couldn't be downloaded ({problem}), then what to do about it ({advice}, whole sentences)
+#, machine
+	{problem}. {advice}	{problem}. {advice}
 #. text in errors.rs
 #. a debrid service's error: too many requests; MDM waits and retries
 #, machine
@@ -6193,6 +6366,10 @@ key	Ctrl+A	Ctrl+A
 #. key name or combination in the Help menu's windows (About, updates, shortcuts, Tell a friend)
 #. translate key names as the keyboard shows them (e.g. Strg for Ctrl)
 #, machine
+key	Ctrl+B	Ctrl+B
+#. key name or combination in the Help menu's windows (About, updates, shortcuts, Tell a friend)
+#. translate key names as the keyboard shows them (e.g. Strg for Ctrl)
+#, machine
 key	Ctrl+click	Ctrl+klik
 #. key name or combination in the Help menu's windows (About, updates, shortcuts, Tell a friend)
 #. translate key names as the keyboard shows them (e.g. Strg for Ctrl)
@@ -6559,6 +6736,10 @@ menu	Direct3D	Direct3D
 #, machine
 menu	Direct3D didn't start here: OpenGL draws	Direct3D se ovdje nije pokrenuo: crta OpenGL
 #. menu command in the main window
+#. View → Draw with: a greyed note; Direct3D draws the windows through Windows' own software renderer (WARP) instead of a graphics card
+#, machine
+menu	Direct3D draws with Windows' software renderer (WARP)	Direct3D crta pomoću softverskog renderera sustava Windows (WARP)
+#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #. the trailing ... means it opens a window: keep it
 #, machine
@@ -6652,6 +6833,10 @@ menu	Metal	Metal
 #, machine
 menu	Metal didn't start here: OpenGL draws	Metal se nije pokrenuo: prozore iscrtava OpenGL
 #. menu command in the main window
+#. View → Draw with: a greyed note; Metal draws the windows through a software renderer instead of a graphics card
+#, machine
+menu	Metal draws with a software renderer	Metal crta pomoću softverskog renderera
+#. menu command in the main window
 #. View → Theme: a style theme's name (Windows 8's flat look); keep "Metro" unless your language writes it otherwise
 #, machine
 menu	Metro	Metro
@@ -6698,6 +6883,10 @@ menu	Open with...	Otvori pomoću...
 #. View → Draw with: a graphics system's name, usually kept as is
 #, machine
 menu	OpenGL	OpenGL
+#. menu command in the main window
+#. View → Draw with: a greyed note; this computer's OpenGL (its graphics driver) is too old, so MDM doesn't draw with it
+#, machine
+menu	OpenGL here is too old to draw MDM	OpenGL je ovdje prestar za crtanje MDM-a
 #. menu command in the main window
 #. what double-clicking a download does — noun: show its properties
 #. noun: opens the download's Properties window
@@ -6849,6 +7038,10 @@ menu	Vulkan	Vulkan
 #. View → Draw with: a greyed note; Vulkan failed on this computer, so OpenGL draws the windows
 #, machine
 menu	Vulkan didn't start here: OpenGL draws	Vulkan se ovdje nije pokrenuo: crta OpenGL
+#. menu command in the main window
+#. View → Draw with: a greyed note; Vulkan draws the windows through a software renderer instead of a graphics card
+#, machine
+menu	Vulkan draws with a software renderer	Vulkan crta pomoću softverskog renderera
 #. menu bar title in the main window (menus, toolbar, Categories pane)
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine

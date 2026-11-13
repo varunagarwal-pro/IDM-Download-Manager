@@ -288,8 +288,11 @@ enum Cmd {
     Scheduler,
     /// Downloads → Options (also the toolbar button).
     Options,
-    /// File → Add batch download (true: from the clipboard).
-    Batch(bool),
+    /// Tasks → Add batch download: an address with a `*` over a range.
+    Batch,
+    /// Tasks → Add batch download from clipboard (#709): the copied text's links in Link
+    /// grabber, or a copied numbered address in Batch download.
+    BatchClipboard,
     /// Tasks → Download video from a page… (yt-dlp, M9).
     VideoPage,
     /// Add torrent → Add magnet link… (M15): the Add torrent dialog, empty or with the
@@ -430,6 +433,7 @@ fn take_place(item: &mut Item, target: PathBuf) {
         }
     }
     item.dest = target;
+    item.moved_away = false;
 }
 
 /// Update `item.pending_mark` after `from` has been renamed to `actual_to` (including renaming
@@ -663,6 +667,7 @@ impl Cmd {
     fn hint(&self) -> Option<&'static str> {
         Some(match self {
             Cmd::AddUrl => "Ctrl+N",
+            Cmd::BatchClipboard => "Ctrl+B",
             Cmd::Find => "Ctrl+F",
             Cmd::FindNext => "F3",
             Cmd::MoveRename => "Ctrl+M",
@@ -967,6 +972,8 @@ pub struct App {
     last_find: Option<crate::find::Query>,
     /// A message with OK: its window title and message: "Cannot find …", an export that failed…
     notice: Option<(&'static str, String)>,
+    /// The list files Import is reading, beside the window (#805).
+    importing: crate::transfer::Importing,
     /// Why the last save of the download list failed (told once per reason).
     save_failed: Option<String>,
     /// Finished files being moved (Move/Rename, Properties → Move): where to, and the answer.
@@ -996,6 +1003,10 @@ pub struct App {
     /// The notification-area icon (created on the first frame), the window hidden in it, and
     /// a real exit under way (closing the window otherwise only hides it, as IDM does).
     tray: Option<crate::tray::Tray>,
+    /// Linux: the icon being made beside the window (#828: its library waits for the session
+    /// bus); `tray` once it is.
+    #[cfg(target_os = "linux")]
+    tray_setup: Option<crate::tray::Setup>,
     tray_limiter: Option<bool>,
     /// When the main window was last seen focused: a tray click steals the focus first
     /// (the taskbar becomes foreground), so a click on a frontmost window reads as
@@ -1023,6 +1034,8 @@ pub struct App {
     clip_checked: Option<Instant>,
     /// The monitor's ask for the clipboard, its read off the window thread (#418).
     clip_asked: Option<crate::clipboard::Ask>,
+    /// Add batch download from clipboard (#709): its read, until it answers.
+    batch_clip: Option<crate::clipboard::Prefill>,
     confirm_delete: Option<dialogs::ConfirmDelete>,
     /// Queue right-click → Delete, asking first: the queue and the question.
     confirm_queue_delete: Option<(usize, dialogs::Confirm)>,
@@ -1163,29 +1176,22 @@ pub(crate) fn mark_finished(
         .name("mark-downloaded".into())
         .spawn(move || {
             for f in files.iter().filter(|f| f.is_file()) {
-                #[cfg(windows)]
-                crate::win32::mark_downloaded(f, &url, referrer.as_deref());
-                #[cfg(unix)]
-                crate::unix::mark_downloaded(f, &url, referrer.as_deref());
+                crate::webmark::mark(f, &url, referrer.as_deref());
             }
         })
         .ok()
 }
 
 /// Marks each file the engine starts writing as downloaded from the web (Mark-of-the-Web, macOS'
-/// quarantine: win32 / unix `mark_downloaded`), as browsers mark theirs. Only http(s) addresses
-/// (an FTP address may carry its login).
+/// quarantine: `webmark::mark`, as the option and Windows' policy say), as browsers mark theirs.
+/// Only http(s) addresses (an FTP address may carry its login).
 pub(crate) fn mark_hook(url: &url::Url, referrer: Option<&str>) -> mdm_engine::FileHook {
     let web = matches!(url.scheme(), "http" | "https");
     let (url, referrer) = (url.to_string(), referrer.map(str::to_owned));
     mdm_engine::FileHook::new(move |path: &std::path::Path| {
-        if !web {
-            return;
+        if web {
+            crate::webmark::mark(path, &url, referrer.as_deref());
         }
-        #[cfg(windows)]
-        crate::win32::mark_downloaded(path, &url, referrer.as_deref());
-        #[cfg(unix)]
-        crate::unix::mark_downloaded(path, &url, referrer.as_deref());
     })
 }
 
@@ -1421,6 +1427,7 @@ impl App {
         crate::i18n::set_lang(settings.language.as_deref());
         crate::theme::language_fonts(ctx);
         crate::regional::set(&settings.regional);
+        crate::webmark::set(settings.mark_downloads);
         if settings.proxy_mode == 2 {
             crate::pacfetch::refresh(&settings.proxy_script, &rt);
         }
@@ -1606,6 +1613,7 @@ impl App {
             find: None,
             last_find: None,
             notice: None,
+            importing: Default::default(),
             save_failed: None,
             moving: Vec::new(),
             renaming_torrents: Vec::new(),
@@ -1619,7 +1627,10 @@ impl App {
             clip_seen: None,
             clip_checked: None,
             clip_asked: None,
+            batch_clip: None,
             tray: None,
+            #[cfg(target_os = "linux")]
+            tray_setup: None,
             tray_limiter: None,
             tray_last_focused: None,
             // Started with the session (#226): hidden from the first frame.
@@ -1789,7 +1800,23 @@ impl App {
             o.x + w / 2.0,
             "strip-left",
         );
-        if let Some(right) = self.activity() {
+        // A list file Import is reading (#805), before what runs.
+        let reading = self.importing.pending().next().map(|path| {
+            let file = path
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            crate::i18n::fmt(
+                // i18n: the status strip while Tasks → Import reads a file; {file} is its name
+                crate::i18n::t("Reading {file}..."),
+                &[("file", &crate::i18n::isolate(&file))],
+            )
+        });
+        let right = match (reading, self.activity()) {
+            (Some(r), Some(a)) => Some(format!("{r}   {a}")),
+            (r, a) => r.or(a),
+        };
+        if let Some(right) = right {
             winui::text_right(p, o.x + w - 10.0, baseline, &right, winui::MUTED());
         }
     }
@@ -2169,6 +2196,7 @@ impl App {
         item.login = login;
         // The browser had started it: the host is already sending the file (#44).
         item.direct = crate::debrid::browser_started(&context);
+        item.referer = context.referer.clone().filter(|r| !r.is_empty());
         item.context = context;
         self.items.push(item);
         self.dirty = true;
@@ -2485,7 +2513,10 @@ impl App {
             "addurl" => self.run(Cmd::AddUrl, None, ctx),
             // MDM_CRASH_TEST=1 only (crash.rs): the crash reports' own check.
             "crash-test" => crate::crash::test(tab),
-            "batch" => self.run(Cmd::Batch(false), None, ctx),
+            "batch" => self.run(Cmd::Batch, None, ctx),
+            // Tasks → Add batch download from clipboard (#709's checks: off-screen, the
+            // clipboard is MDM_TEST_CLIPBOARD's file).
+            "batch-clipboard" => self.run(Cmd::BatchClipboard, None, ctx),
             "find" => self.run(Cmd::Find, None, ctx),
             "scheduler" => self.run(Cmd::Scheduler, None, ctx),
             "about" => self.run(Cmd::About, None, ctx),
@@ -2584,10 +2615,11 @@ impl App {
                 }
             }
             // A page whose videos need ffmpeg (#351): without it the list has only the sound.
+            // `video-adaptive:runtime`: yt-dlp said it had no JavaScript runtime (#852).
             "video-adaptive" => {
                 self.run(Cmd::VideoPage, None, ctx);
                 if let Some(v) = &mut self.video_dlg {
-                    v.show_sample_adaptive();
+                    v.show_sample_adaptive(tab == "runtime");
                 }
             }
             // A sample playlist (#69), its quality by its place in the list: `video-playlist:7`.
@@ -2656,6 +2688,9 @@ impl App {
             "theme-add" => {
                 self.add_theme_file(std::path::Path::new(tab), ctx);
             }
+            // Tasks → Import, as its dialog answers: `import:<path>` (tests of a large or wrong
+            // file without the system's dialog, #805).
+            "import" => self.import_file(std::path::Path::new(tab)),
             // View → Theme → a theme, as the menu picks it (#45): `theme:native` (tests of the
             // live switch without a click).
             "theme" => {
@@ -2785,6 +2820,8 @@ impl App {
         if let Some(file) = drive_file_behind_player(&cmd) {
             cmd.video_page = None;
             cmd.url = Some(file);
+            // Drive names its file itself; its page's title ("… - Google Drive") doesn't.
+            cmd.video_title = None;
         }
         // The button over a video that plays a plain file (#703): downloaded as any file, at
         // once and without a window (its page the referrer), as Download File Info's Start would.
@@ -2906,7 +2943,7 @@ impl App {
             let name = cmd
                 .name
                 .clone()
-                .unwrap_or_else(|| mdm_engine::naming::file_name(None, &url));
+                .unwrap_or_else(|| crate::model::browser_guess(&url, &cmd));
             let name = mdm_engine::naming::sanitize(&name);
             // The automation API's `category` (by its key) and `queue` (by name), when given.
             let category = cmd
@@ -3015,6 +3052,12 @@ impl App {
             on_file_created: Some(mark_hook(url, context.referer.as_deref())),
             // The browser's own download's type: a web page instead is an error (#533).
             expected_type: context.mime.clone(),
+            // And the size it announced: larger than any waiting page, a page in its place is
+            // the site's (#701).
+            expected_size: context.size,
+            // The page a media file was played on (#800): a file whose address names nothing
+            // (a script, a bare id) is named by its title when the engine names it.
+            page_title: context.video_title.clone(),
             ..Options::default()
         };
         RequestParts { headers, opts }
@@ -3099,6 +3142,8 @@ impl App {
                 item.status = Status::Error;
                 item.error = Some(why);
                 item.last_try = Some(model::now_stamp());
+                // A failure of its own, not the last run's (`Item::got_web_page`).
+                item.snap = None;
             }
             self.dirty = true;
             return;
@@ -3129,6 +3174,7 @@ impl App {
                     item.status = Status::Error;
                     item.error = Some(crate::errors::describe(&e));
                     item.last_try = Some(model::now_stamp());
+                    item.snap = None;
                     self.dirty = true;
                     return;
                 }
@@ -3688,10 +3734,33 @@ impl App {
         let wanted =
             !crate::offscreen() || std::env::var_os("MDM_TEST_TRAY").is_some_and(|v| v == "1");
         if self.tray.is_none() && self.tray_limiter.is_none() && wanted {
-            self.tray = crate::tray::Tray::new(ctx, self.settings.speed_limit_on);
+            // Linux: made beside the window, which never waits for the session bus (#828); until
+            // it is, the window behaves as with no tray host.
+            #[cfg(target_os = "linux")]
+            {
+                self.tray_setup =
+                    Some(crate::tray::Setup::start(ctx, self.settings.speed_limit_on));
+            }
+            #[cfg(not(target_os = "linux"))]
+            {
+                self.tray = crate::tray::Tray::new(ctx, self.settings.speed_limit_on);
+                if self.tray.is_some() {
+                    tracing::info!("tray icon shown");
+                }
+            }
+            // The limiter the menu is made with (set again below once it changes).
             self.tray_limiter = Some(self.settings.speed_limit_on);
-            if self.tray.is_some() {
-                tracing::info!("tray icon shown");
+        }
+        #[cfg(target_os = "linux")]
+        if let Some(setup) = &mut self.tray_setup {
+            match setup.poll() {
+                crate::tray::Came::Waiting => {}
+                crate::tray::Came::Up(tray) => {
+                    tracing::info!("tray icon shown");
+                    self.tray = Some(tray);
+                    self.tray_setup = None;
+                }
+                crate::tray::Came::Failed => self.tray_setup = None,
             }
         }
         if let Some(t) = &self.tray
@@ -3778,7 +3847,8 @@ impl App {
                     continue;
                 }
                 TrayCmd::AddUrl => Cmd::AddUrl,
-                TrayCmd::Batch => Cmd::Batch(false),
+                TrayCmd::Batch => Cmd::Batch,
+                TrayCmd::BatchClipboard => Cmd::BatchClipboard,
                 TrayCmd::LimiterOn => Cmd::LimiterOn,
                 TrayCmd::LimiterOff => Cmd::LimiterOff,
                 TrayCmd::Scheduler => Cmd::Scheduler,
@@ -3935,6 +4005,12 @@ impl App {
         let Some(text) = text.filter(|t| Some(t) != before.as_ref()) else {
             return;
         };
+        // Several links (or words) are not one address: the address parser drops line breaks,
+        // and made one address of a copied list (#709). They are for Tasks → Add batch download
+        // from clipboard.
+        if text.contains(char::is_whitespace) {
+            return;
+        }
         let Ok(url) = url::Url::parse(&text) else {
             return;
         };
@@ -3969,7 +4045,7 @@ impl App {
         let Some(item) = self.item(c.id) else { return };
         item.description = c.description;
         item.login = c.login;
-        item.context.referer = c.referer;
+        item.set_referer(c.referer);
         // "Through …" changed (#44): the next start goes the new way. The service's link is
         // dropped from the resume state: directly, it continues from the host's own address;
         // through the account, from a new link the service gives. The size and validators
@@ -4400,6 +4476,7 @@ impl App {
             None => crate::videodlg::VideoDialog::new(dir),
         }
         .with_subs(self.settings.video_subs.clone())
+        .with_chapters(self.settings.video_chapters)
         .with_music_folder(music)
     }
 
@@ -4677,6 +4754,9 @@ impl App {
                 ));
                 let url = item.url.clone();
                 item.live = Some(Live::new(model::Job::Video { job, url }, item.downloaded));
+                // This run's stream addresses are new ones (signed, they expire): the windows
+                // show the page until the engine has the first (#795).
+                item.file_url = None;
                 item.status = Status::Downloading;
                 item.error = None;
                 item.last_try = Some(model::now_stamp());
@@ -5000,14 +5080,15 @@ impl App {
     }
 
     /// Add torrent → Download Now / Later. Through the debrid account when torrents go there
-    /// (#44): the .torrent's magnet link (its hash, name and trackers), all its files.
-    fn add_torrent(&mut self, add: crate::torrentdlg::TorrentAdd) {
+    /// (#44): the .torrent's magnet link (its hash, name and trackers), all its files. The
+    /// download added, if one was (not when the debrid account takes it).
+    fn add_torrent(&mut self, add: crate::torrentdlg::TorrentAdd) -> Option<u64> {
         if self.torrent_account().is_some()
             && let Some(magnet) =
                 mdm_torrent::magnet_link(&add.meta.torrent).and_then(|m| url::Url::parse(&m).ok())
         {
             self.add_remote_torrent(magnet, add.dir.clone(), add.category, add.start_now);
-            return;
+            return None;
         }
         let meta = &add.meta;
         if let Err(e) = crate::torrents::save_torrent(&meta.info_hash, &meta.torrent) {
@@ -5018,7 +5099,7 @@ impl App {
                     &[("error", &e.to_string())],
                 ),
             ));
-            return;
+            return None;
         }
         let folder = meta.folder_in(&add.dir);
         let dest = crate::torrents::dest_for(meta, &add.dir, add.files.as_deref());
@@ -5082,6 +5163,7 @@ impl App {
             self.queue_later(vec![id], self.settings.queue_panel_later);
         }
         self.dirty = true;
+        Some(id)
     }
 
     /// Right-click → Torrent → Download in order (`in_order`), or its first and last pieces
@@ -5505,6 +5587,45 @@ impl App {
         }
     }
 
+    /// Add batch download from clipboard (#709), once the clipboard's text came (`None`: no
+    /// text): its links in Link grabber (with those there already), a numbered address in Batch
+    /// download, or a note that says why nothing opens.
+    fn batch_from_clipboard(&mut self, text: Option<&str>, ctx: &egui::Context) {
+        let why = match crate::clipbatch::read(text) {
+            crate::clipbatch::Clip::Links(found) => {
+                tracing::info!("add batch download from clipboard: {} links", found.len());
+                // i18n: Link grabber: where the links came from: the clipboard (Tasks → Add batch download from clipboard)
+                let source = crate::i18n::t("Clipboard").to_owned();
+                self.show_import(found, source);
+                dialogs::raise(ctx, dialogs::dialog_viewport("grabber"));
+                return;
+            }
+            crate::clipbatch::Clip::Pattern(p) => {
+                tracing::info!(
+                    "add batch download from clipboard: the pattern {}",
+                    p.address
+                );
+                if self.batch.is_none() {
+                    self.batch = Some(crate::batch::Batch::with_pattern(p));
+                }
+                dialogs::raise(ctx, dialogs::dialog_viewport("batch"));
+                return;
+            }
+            crate::clipbatch::Clip::Empty => crate::i18n::t(
+                "The clipboard holds no text. Copy some links, or a text with links in it, and try again.",
+            ),
+            crate::clipbatch::Clip::NoLinks => crate::i18n::t(
+                "No download links were found in the clipboard. Copy a text with http, https, ftp or magnet links in it, and try again.",
+            ),
+        };
+        tracing::info!("add batch download from clipboard: nothing to download");
+        self.notice = Some((
+            // i18n: title of the note when Tasks → Add batch download from clipboard finds nothing to download
+            crate::i18n::mark("Add batch download from clipboard"),
+            why.to_owned(),
+        ));
+    }
+
     /// Batch download → OK: every address goes to the main download queue (IDM's default; its
     /// queue selection panel is not built yet).
     fn add_batch(&mut self, added: crate::batch::Added) {
@@ -5749,27 +5870,15 @@ impl App {
             None => mdm_torrent::Source::magnet(text.trim()).map(|m| (m, true)),
         };
         if let Some((source, from_magnet)) = torrent {
-            let slot: crate::remote::Slot = Default::default();
-            let (out, host, known) = (
-                slot.clone(),
-                self.torrent_host.clone(),
-                self.session_hashes(),
-            );
-            self.rt.spawn(async move {
-                let res = match host.session(known).await {
-                    Ok(t) => t
-                        .metadata(&source, crate::torrentdlg::METADATA_WAIT, None)
-                        .await
-                        .map_err(|e| crate::errors::torrent(&e)),
-                    Err(e) => Err(e),
-                };
-                *out.lock().unwrap() = Some(res);
-            });
+            let slot = self.look_up_torrent(source);
             self.remote_torrents.push(crate::remote::Lookup {
                 slot,
                 category,
                 queue,
                 from_magnet,
+                dir: None,
+                group: None,
+                tell: false,
             });
             return line(&AddAnswer {
                 id: None,
@@ -5824,35 +5933,81 @@ impl App {
         })
     }
 
-    /// The torrents a paired device sent whose files are known now: added with every file
-    /// (into the category's folder), as an RSS rule adds one; never over files already there.
+    /// A torrent's files looked up on the runtime (a magnet link asks the swarm); the answer
+    /// comes in the slot.
+    fn look_up_torrent(&self, source: mdm_torrent::Source) -> crate::remote::Slot {
+        let slot: crate::remote::Slot = Default::default();
+        let (out, host, known) = (
+            slot.clone(),
+            self.torrent_host.clone(),
+            self.session_hashes(),
+        );
+        self.rt.spawn(async move {
+            let res = match host.session(known).await {
+                Ok(t) => t
+                    .metadata(&source, crate::torrentdlg::METADATA_WAIT, None)
+                    .await
+                    .map_err(|e| crate::errors::torrent(&e)),
+                Err(e) => Err(e),
+            };
+            *out.lock().unwrap() = Some(res);
+        });
+        slot
+    }
+
+    /// The torrents a paired device sent, or Link grabber's magnet links (#709), whose files
+    /// are known now: added with every file (into the category's folder, or the package's), as
+    /// an RSS rule adds one; never over files already there.
     fn poll_remote_torrents(&mut self) {
         let mut ready = Vec::new();
-        self.remote_torrents
-            .retain(|l| match l.slot.lock().unwrap().take() {
-                Some(res) => {
-                    ready.push((res, l.category, l.queue, l.from_magnet));
-                    false
-                }
-                None => true,
-            });
-        for (res, category, queue, from_magnet) in ready {
+        for l in std::mem::take(&mut self.remote_torrents) {
+            let res = l.slot.lock().unwrap().take();
+            match res {
+                Some(res) => ready.push((res, l)),
+                None => self.remote_torrents.push(l),
+            }
+        }
+        for (res, l) in ready {
+            let crate::remote::Lookup {
+                category,
+                queue,
+                from_magnet,
+                dir,
+                group,
+                tell,
+                ..
+            } = l;
             let meta = match res {
                 Ok(meta) => meta,
                 Err(e) => {
                     tracing::warn!("remote control: a torrent could not be read: {e}");
+                    if tell {
+                        self.notice = Some((
+                            crate::i18n::mark("Link grabber"),
+                            crate::i18n::fmt(
+                                // i18n: Link grabber added a magnet link whose torrent could not be found; {error} says why
+                                crate::i18n::t(
+                                    "A magnet link's files could not be looked up: {error}",
+                                ),
+                                &[("error", &e)],
+                            ),
+                        ));
+                    }
                     continue;
                 }
             };
             if self.torrent_hashes().contains(&meta.info_hash) {
+                tracing::info!("{}: this torrent is in the list already", meta.name);
                 continue;
             }
             let category = category.unwrap_or_else(|| crate::torrentdlg::category_of(&meta));
-            let dir = crate::model::category_folder(
-                category,
-                &self.downloads,
-                &self.settings.category_dirs,
-            );
+            let dir = dir.unwrap_or_else(|| {
+                crate::model::category_folder(
+                    category,
+                    &self.downloads,
+                    &self.settings.category_dirs,
+                )
+            });
             if !meta.existing_in(&dir).is_empty() {
                 tracing::warn!(
                     "remote control: {}: its files are already in {}",
@@ -5861,7 +6016,7 @@ impl App {
                 );
                 continue;
             }
-            self.add_torrent(crate::torrentdlg::TorrentAdd {
+            let id = self.add_torrent(crate::torrentdlg::TorrentAdd {
                 meta,
                 dir,
                 files: None,
@@ -5872,6 +6027,11 @@ impl App {
                 queue,
                 quiet: true,
             });
+            if let (Some(g), Some(id)) = (group, id)
+                && let Some(i) = self.item(id)
+            {
+                i.group = Some(g);
+            }
         }
     }
 
@@ -5944,6 +6104,7 @@ impl App {
         }
         self.settings = new;
         crate::regional::set(&self.settings.regional);
+        crate::webmark::set(self.settings.mark_downloads);
         // Options → Remote: listening started, stopped or moved.
         if let Some(r) = &self.remote {
             r.apply(crate::remote::config(&self.settings));
@@ -6198,12 +6359,53 @@ impl App {
         }
     }
 
+    /// Files dragged out of Download complete that the drop target moved (#869): the download
+    /// follows its file where the shell said it went, or remembers it went where MDM couldn't
+    /// learn. Only while the download still points where the drag took the file from.
+    fn poll_dragged_out(&mut self) {
+        for (id, from, out) in dialogs::dragged_out() {
+            let Some(item) = self.item(id).filter(|i| i.dest == from) else {
+                continue;
+            };
+            match &out {
+                dialogs::DraggedOut::Moved(to) => {
+                    tracing::info!("drag out: download {id} moved with its file");
+                    take_place(item, to.clone());
+                    let folder = to.parent().unwrap_or(to).display().to_string();
+                    item.note(crate::i18n::fmt(
+                        crate::i18n::t("Dragged out of Download complete and moved to {folder}"),
+                        &[("folder", &folder)],
+                    ));
+                }
+                dialogs::DraggedOut::MovedAway => {
+                    tracing::info!("drag out: download {id}'s file moved where MDM can't follow");
+                    item.moved_away = true;
+                    item.note(crate::i18n::t(
+                        "Dragged out of Download complete and moved to a place MDM couldn't learn",
+                    ));
+                }
+            }
+            for c in &mut self.complete {
+                if c.id == id {
+                    match &out {
+                        dialogs::DraggedOut::Moved(to) => {
+                            c.path = to.clone();
+                            c.moved_away = false;
+                        }
+                        dialogs::DraggedOut::MovedAway => c.moved_away = true,
+                    }
+                }
+            }
+            self.dirty = true;
+        }
+    }
+
     fn open_item(&mut self, id: u64) {
         let Some(i) = self.items.iter().find(|i| i.id == id) else {
             return;
         };
         if i.status == Status::Complete {
-            crate::dialogs::open_file(&i.dest);
+            crate::dialogs::open_download(&i.dest, i.moved_away);
         } else if !self.progress.iter().any(|p| p.id == id) {
             self.progress
                 .push(Progress::new(id, self.settings.show_complete));
@@ -6230,6 +6432,10 @@ impl App {
         let dest = target
             .and_then(|id| self.items.iter().find(|i| i.id == id))
             .map(|i| i.dest.clone());
+        // Its file dragged out of Download complete to a place MDM couldn't learn (#869).
+        let moved_away = target
+            .and_then(|id| self.items.iter().find(|i| i.id == id))
+            .is_some_and(|i| i.moved_away);
         match cmd {
             Cmd::AddUrl => self.add_url = Some(AddUrl::from_clipboard(&self.settings.url_history)),
             Cmd::Exit => {
@@ -6383,6 +6589,9 @@ impl App {
                 // Chosen again after it failed here: its next start is tried.
                 if Some(api) == crate::renderer::GPU {
                     crate::renderer::forget_failure();
+                } else {
+                    // OpenGL chosen again after it couldn't draw MDM (#835): tried and checked.
+                    crate::renderer::forget_gl_unfit();
                 }
                 tracing::info!("draw with {api:?} from the next start");
                 self.settings.renderer = Some(api);
@@ -6436,12 +6645,12 @@ impl App {
             }
             Cmd::OpenWith => {
                 if let Some(d) = dest {
-                    dialogs::open_with(&d);
+                    dialogs::open_download_with(&d, moved_away);
                 }
             }
             Cmd::OpenFolder => {
                 if let Some(d) = dest {
-                    dialogs::show_in_folder(&d);
+                    dialogs::show_download_in_folder(&d, moved_away);
                 }
             }
             Cmd::ToggleColumn(i) => self.list.visible[i] = !self.list.visible[i],
@@ -6547,11 +6756,14 @@ impl App {
                         .pick_file()
                 });
             }
-            Cmd::Batch(clipboard) => {
+            Cmd::Batch => {
                 if self.batch.is_none() {
-                    self.batch = Some(crate::batch::Batch::new(clipboard));
+                    self.batch = Some(crate::batch::Batch::new());
                 }
             }
+            // Read now, off the window's thread; what it holds opens a window when it comes
+            // (`batch_from_clipboard`).
+            Cmd::BatchClipboard => self.batch_clip = Some(crate::clipboard::Prefill::ask()),
             Cmd::Options => {
                 if self.options.is_none() {
                     self.options = Some(
@@ -6669,6 +6881,7 @@ impl App {
     /// Pull engine progress into the rows; open "Download complete" when one finishes.
     fn poll(&mut self, ctx: &egui::Context) {
         self.poll_moves();
+        self.poll_dragged_out();
         self.poll_deferred_torrent_renames();
         if !self.moving.is_empty()
             || !self.renaming_torrents.is_empty()
@@ -6683,7 +6896,11 @@ impl App {
             if i.poll() {
                 self.dirty = true;
                 match i.status {
-                    Status::Complete => finished.push(i.id),
+                    Status::Complete => {
+                        // Downloaded again: its file is where MDM saved it.
+                        i.moved_away = false;
+                        finished.push(i.id);
+                    }
                     Status::Error => failed.push(i.id),
                     _ => {}
                 }
@@ -7001,10 +7218,10 @@ impl App {
                 I("Open &torrent file...", Cmd::OpenTorrentFile, true, false),
                 I("Add &magnet link...", Cmd::AddMagnet, true, false),
                 I("Torrent setti&ngs...", Cmd::TorrentSettings, true, false),
-                I("Add &batch download", Cmd::Batch(false), true, false),
+                I("Add &batch download", Cmd::Batch, true, false),
                 I(
                     "Add batch download from &clipboard",
-                    Cmd::Batch(true),
+                    Cmd::BatchClipboard,
                     true,
                     false,
                 ),
@@ -7307,8 +7524,8 @@ impl App {
 
     /// View → Draw with (#89, #206): OpenGL or the system's own graphics API (Direct3D on
     /// Windows, Vulkan on Linux, Metal on macOS), used from the next start. Greyed lines say when
-    /// what draws now isn't the choice: the system's API failed here (and why), or the choice
-    /// waits for the next start.
+    /// what draws now isn't the choice: the system's API failed here (and why), OpenGL can't
+    /// draw MDM here (#835), a software renderer draws, or the choice waits for the next start.
     #[cfg(gpu)]
     fn draw_with_menu(&self) -> MenuEntry<Cmd> {
         use crate::renderer::{self, Api, Why};
@@ -7318,25 +7535,31 @@ impl App {
         let gpu = renderer::GPU.unwrap_or(Api::OpenGl);
         let on = chosen == gpu;
         let draw = Cmd::DrawWith(gpu);
-        // Its choice, and the note when it failed here.
-        let (choice, failed_note) = match gpu {
+        // Its choice, the note when it failed here, and the one when a software renderer draws it.
+        let (choice, failed_note, software_note) = match gpu {
             Api::Direct3D => (
                 // i18n: View → Draw with: a graphics system's name (Microsoft's), usually kept as is
                 Radio("Direct3D", draw, true, on),
                 // i18n: View → Draw with: a greyed note; Direct3D failed on this computer, so OpenGL draws the windows
                 off("Direct3D didn't start here: OpenGL draws"),
+                // i18n: View → Draw with: a greyed note; Direct3D draws the windows through Windows' own software renderer (WARP) instead of a graphics card
+                off("Direct3D draws with Windows' software renderer (WARP)"),
             ),
             Api::Vulkan => (
                 // i18n: View → Draw with: a graphics system's name (Khronos', used on Linux), usually kept as is
                 Radio("Vulkan", draw, true, on),
                 // i18n: View → Draw with: a greyed note; Vulkan failed on this computer, so OpenGL draws the windows
                 off("Vulkan didn't start here: OpenGL draws"),
+                // i18n: View → Draw with: a greyed note; Vulkan draws the windows through a software renderer instead of a graphics card
+                off("Vulkan draws with a software renderer"),
             ),
             _ => (
                 // i18n: View → Draw with: a graphics system's name (Apple's), usually kept as is
                 Radio("Metal", draw, true, on),
                 // i18n: View → Draw with: a greyed note; Metal failed on this computer, so OpenGL draws the windows
                 off("Metal didn't start here: OpenGL draws"),
+                // i18n: View → Draw with: a greyed note; Metal draws the windows through a software renderer instead of a graphics card
+                off("Metal draws with a software renderer"),
             ),
         };
         let mut items = vec![
@@ -7350,13 +7573,25 @@ impl App {
             choice,
         ];
         let failed = renderer::gpu_failed().filter(|_| on);
-        if renderer::active().is_some_and(|a| a != chosen) {
+        let active = renderer::active();
+        // The system's API on a software renderer (WARP): said, with why below (no card for
+        // it, an OpenGL that can't draw MDM).
+        let software = active == Some(gpu) && renderer::software();
+        // OpenGL can't draw MDM here (#835): said where it changed what draws.
+        let unfit = renderer::opengl_unfit() && active == Some(gpu) && (software || !on);
+        if active.is_some_and(|a| a != chosen) || software {
             items.push(Sep);
-            let last = match failed {
+            if software {
+                items.push(software_note);
+            }
+            let mut notes = Vec::new();
+            match failed {
                 Some(why) => {
-                    items.push(failed_note);
+                    if !software {
+                        items.push(failed_note);
+                    }
                     // Why, under it ("it": Direct3D, Vulkan or Metal).
-                    match why {
+                    notes.push(match why {
                         // i18n: View → Draw with: a greyed note under "… didn't start here"; why: no graphics card here has a driver for that graphics system ("it")
                         Why::NoAdapter => off("No graphics card here has a driver for it"),
                         // i18n: View → Draw with: a greyed note under "… didn't start here"; why: the window stayed empty, so MDM started again with OpenGL
@@ -7367,12 +7602,18 @@ impl App {
                         Why::LostTwice => off("The graphics card was lost twice in 10 minutes"),
                         // i18n: View → Draw with: a greyed note under "… didn't start here"; why: another error, written in MDM's log
                         Why::Other => off("It couldn't start: the log says why"),
-                    }
+                    });
                 }
+                // A software renderer that draws for want of a card says only that.
+                None if software || unfit => {}
                 // i18n: View → Draw with: a greyed note under the choices; the choice takes effect when MDM is started again
-                None => off("Applies the next time MDM starts"),
-            };
-            items.push(last);
+                None => notes.push(off("Applies the next time MDM starts")),
+            }
+            if unfit {
+                // i18n: View → Draw with: a greyed note; this computer's OpenGL (its graphics driver) is too old, so MDM doesn't draw with it
+                notes.push(off("OpenGL here is too old to draw MDM"));
+            }
+            items.extend(notes);
         }
         // i18n: View menu: submenu choosing what draws MDM's windows: OpenGL, or Direct3D, Vulkan or Metal (graphics systems)
         Sub("Draw with", true, items)
@@ -8391,14 +8632,17 @@ impl App {
                 PopupResult::Dismissed => self.popup = None,
             }
         }
-        // Ctrl+F finds, F3 finds the next match (Downloads menu); Ctrl+N adds a download (not
-        // in IDM). The full list: Help → Keyboard shortcuts (`shortcuts.rs`).
+        // Ctrl+F finds, F3 finds the next match (Downloads menu); Ctrl+N adds a download and
+        // Ctrl+B the links in the clipboard (#709), neither in IDM. Not Ctrl+Shift+V for that: the
+        // windowing library answers the paste keys by reading the clipboard on the window's
+        // thread (#418). The full list: Help → Keyboard shortcuts (`help.rs`).
         if chosen.is_none() && self.popup.is_none() && self.open_menu.is_none() {
-            let (find, next, add) = ctx.input_mut(|i| {
+            let (find, next, add, clip) = ctx.input_mut(|i| {
                 (
                     i.consume_key(egui::Modifiers::COMMAND, egui::Key::F),
                     i.consume_key(egui::Modifiers::NONE, egui::Key::F3),
                     i.consume_key(egui::Modifiers::COMMAND, egui::Key::N),
+                    i.consume_key(egui::Modifiers::COMMAND, egui::Key::B),
                 )
             });
             // Ctrl+M as IDM; F2 as renaming in Explorer.
@@ -8414,6 +8658,8 @@ impl App {
                 chosen = Some((Cmd::FindNext, None));
             } else if add {
                 chosen = Some((Cmd::AddUrl, None));
+            } else if clip {
+                chosen = Some((Cmd::BatchClipboard, None));
             }
         }
         // Delete removes the selected downloads, Shift+Delete with their files (both ask first);
@@ -8986,20 +9232,52 @@ impl App {
         }
     }
 
-    /// The addresses in a list file, shown in Import to tick before adding.
+    /// The addresses in a list file, shown in Import to tick before adding. The file is read and
+    /// searched beside the window (#805): a large one, or one that isn't a list (a video, an
+    /// archive picked by mistake), froze it. The status strip says "Reading …" meanwhile.
     fn import_file(&mut self, path: &std::path::Path) {
+        self.importing.start(path, Some(&self.ui_ctx));
+    }
+
+    /// Each frame, never waiting: the list files read since, into Import (`import_file`).
+    fn poll_imports(&mut self) {
+        for (path, read) in self.importing.finished() {
+            self.imported(&path, read);
+        }
+    }
+
+    /// A list file read: its addresses into Import, or why there are none.
+    fn imported(&mut self, path: &std::path::Path, read: crate::transfer::ListRead) {
+        use crate::transfer::ListRead;
         let file = path
             .file_name()
             .map(|n| n.to_string_lossy().into_owned())
             .unwrap_or_default();
-        let found = match std::fs::read(path) {
-            Ok(bytes) => crate::transfer::import(&String::from_utf8_lossy(&bytes)),
-            Err(e) => {
+        let found = match read {
+            ListRead::Found(found) => found,
+            ListRead::TooBig(size) => {
+                self.notice = Some((
+                    crate::i18n::mark("Import"),
+                    crate::i18n::fmt(
+                        // i18n: Import refused a file; {size} = its size and {limit} = the largest Import reads, like "4.50 GB" and "64.00 MB"
+                        crate::i18n::t(
+                            "{file} is too large to be a list of addresses ({size}). Import reads text files, web pages and .ef2 exports of up to {limit}.",
+                        ),
+                        &[
+                            ("file", &crate::i18n::isolate(&file)),
+                            ("size", &model::size(size)),
+                            ("limit", &model::size(crate::transfer::IMPORT_LIMIT)),
+                        ],
+                    ),
+                ));
+                return;
+            }
+            ListRead::Failed(e) => {
                 self.notice = Some((
                     crate::i18n::mark("Import"),
                     crate::i18n::fmt(
                         crate::i18n::t("The file could not be read: {error}"),
-                        &[("error", &e.to_string())],
+                        &[("error", &e)],
                     ),
                 ));
                 return;
@@ -9039,7 +9317,9 @@ impl App {
 
     /// Link grabber's ticked links: each package's to its folder, tagged with the package (its
     /// archives are extracted when all are in), into the main queue; started too on Start (else
-    /// only queued, as IDM's import).
+    /// only queued, as IDM's import). A magnet link's torrent is added once its files are known
+    /// (#709), with every file, in the package's folder when it has one. All of them are one
+    /// group (#766): one summary when the last is done.
     fn add_grabbed(&mut self, start: bool, packages: Vec<crate::grabber::Picked>) {
         // Package numbers after those in the list.
         let last = self
@@ -9049,6 +9329,7 @@ impl App {
             .max()
             .unwrap_or(0);
         let mut added = Vec::new();
+        let mut magnets = Vec::new();
         for (id, pk) in (last + 1..).zip(packages) {
             let tag = crate::model::PackageTag {
                 id,
@@ -9058,6 +9339,11 @@ impl App {
                 password: pk.password.clone(),
             };
             for (d, name, size) in pk.links {
+                if let Some(magnet) = mdm_torrent::Source::magnet(&d.url) {
+                    let dir = (!pk.folder.as_os_str().is_empty()).then(|| pk.folder.clone());
+                    magnets.push((magnet, dir));
+                    continue;
+                }
                 let Ok(url) = url::Url::parse(&d.url) else {
                     continue;
                 };
@@ -9096,7 +9382,28 @@ impl App {
                 added.push(id);
             }
         }
-        self.group(&added);
+        // The torrents join the others' group when their files come (a group of one
+        // download's summary is its own Download complete).
+        let group = (added.len() + magnets.len() > 1)
+            .then(|| added.first().copied())
+            .flatten();
+        if let Some(g) = group {
+            for i in self.items.iter_mut().filter(|i| added.contains(&i.id)) {
+                i.group = Some(g);
+            }
+        }
+        for (source, dir) in magnets {
+            let slot = self.look_up_torrent(source);
+            self.remote_torrents.push(crate::remote::Lookup {
+                slot,
+                category: None,
+                queue: (!start).then_some(0),
+                from_magnet: true,
+                dir,
+                group,
+                tell: true,
+            });
+        }
         self.dirty = true;
         // Start runs the main queue (its files at once, as Options → Queue sets).
         if start && !added.is_empty() {
@@ -9105,11 +9412,22 @@ impl App {
     }
 
     /// Link grabber's look-ups (Options → Archives → "Check links"): the next links, each
-    /// with its own request (the page's referer and cookies), on the runtime.
+    /// with its own request (the page's referer and cookies), on the runtime. Then the web pages
+    /// given on their own that the look-ups found, each read for its links (#705), which join.
     fn grabber_checks(&mut self, ctx: &egui::Context) {
+        let read = self
+            .grabber
+            .as_mut()
+            .map(|g| g.pages_read())
+            .unwrap_or_default();
+        for found in read {
+            // The same rule as every link added: one in the download list comes unticked.
+            self.show_import(found, String::new());
+        }
         if !self.settings.grabber_check {
             return;
         }
+        self.grabber_reads(ctx);
         let Some(g) = &self.grabber else { return };
         for (i, url, d) in g.to_check() {
             let context = ipc::Command {
@@ -9130,6 +9448,51 @@ impl App {
             });
             if let Some(g) = &mut self.grabber {
                 g.checking(i, slot);
+            }
+        }
+    }
+
+    /// Link grabber's web pages to read for their links (#705), each with its own request, on
+    /// the runtime: the page's links come back with the page as their referer (the package is
+    /// named after it), the agent and private mark the page had. Not the page's cookies, which
+    /// are its own site's.
+    fn grabber_reads(&mut self, ctx: &egui::Context) {
+        let Some(g) = &self.grabber else { return };
+        for (i, url, d) in g.to_read() {
+            let context = ipc::Command {
+                referer: d.referer.clone(),
+                cookies: d.cookies.clone(),
+                user_agent: d.user_agent.clone(),
+                ..Default::default()
+            };
+            let parts = self.request_parts(&url, None, &context, false);
+            let slot: std::sync::Arc<std::sync::Mutex<Option<_>>> = Default::default();
+            let (out, ctx) = (slot.clone(), ctx.clone());
+            self.rt.spawn(async move {
+                let found = match mdm_engine::page_links(url, parts.headers, &parts.opts).await {
+                    Ok((at, links)) => {
+                        tracing::info!("link grabber: {} links on a page", links.len());
+                        links
+                            .into_iter()
+                            .map(|u| crate::transfer::Imported {
+                                url: u.into(),
+                                referer: Some(at.to_string()),
+                                user_agent: d.user_agent.clone(),
+                                private: d.private,
+                                ..Default::default()
+                            })
+                            .collect()
+                    }
+                    Err(e) => {
+                        tracing::info!("link grabber: a page couldn't be read: {e}");
+                        Vec::new()
+                    }
+                };
+                *out.lock().unwrap() = Some(found);
+                ctx.request_repaint();
+            });
+            if let Some(g) = &mut self.grabber {
+                g.reading(i, slot);
             }
         }
     }
@@ -9920,6 +10283,13 @@ impl App {
                     {
                         self.dirty = true;
                     }
+                    // Embed chapters is kept for the next video (#827), and the videos added
+                    // now start with it.
+                    if self.settings.video_chapters != v.chapters() {
+                        self.settings.video_chapters = v.chapters();
+                        crate::settings::share_video_settings(&self.settings);
+                        self.dirty = true;
+                    }
                     self.video_dlg = None;
                     match out {
                         crate::videodlg::VideoOut::One(add) => {
@@ -9929,6 +10299,10 @@ impl App {
                     }
                 }
             }
+        }
+        if let Some(got) = self.batch_clip.as_mut().and_then(|p| p.answer()) {
+            self.batch_clip = None;
+            self.batch_from_clipboard(got.as_deref(), ctx);
         }
         if let Some(b) = &mut self.batch {
             match b.show(ctx) {
@@ -10321,7 +10695,7 @@ impl App {
         // the taskbar's progress all stood still until the window was restored.
         crate::settings::share_proxy(self.settings.proxy());
         crate::settings::share_dns(self.settings.dns());
-        crate::settings::share_video_cookies(&self.settings);
+        crate::settings::share_video_settings(&self.settings);
         if !self.headless {
             self.follow_assistive_technology(ctx);
         }
@@ -10390,6 +10764,7 @@ impl App {
         // Incoming commands and the clock (downloads, queues, Scheduler, saving…): `logic`, just
         // before, which runs minimized too.
         self.poll_picks(&ctx);
+        self.poll_imports();
         self.drop_target(&ctx);
         self.main_drops(&ctx);
         self.remember_layout(&ctx);
@@ -10497,7 +10872,7 @@ impl App {
             let name = context
                 .name
                 .clone()
-                .unwrap_or_else(|| mdm_engine::naming::file_name(None, &url));
+                .unwrap_or_else(|| crate::model::browser_guess(&url, &context));
             let name = mdm_engine::naming::sanitize(&name);
             let category = Category::of(&name);
             let dir = self.settings.category_dir(category, &self.downloads);

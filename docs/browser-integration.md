@@ -97,7 +97,7 @@ When MDM takes a download, the browser's own copy is cancelled and removed from 
 
 Downloads from a private window use that window's cookies, never the normal ones, and aren't kept in MDM's list after it closes.
 
-Files MDM downloads from the browser are marked as coming from the internet, as the browser marks its own: Windows checks a program with SmartScreen before it runs and Office opens a document in Protected View.
+Files MDM downloads from the browser are marked as coming from the internet, as the browser marks its own: Windows checks a program with SmartScreen before it runs and Office opens a document in Protected View. Like the browser, MDM leaves the mark out when Windows' Group Policy **Do not preserve zone information in file attachments** is on; [Options → Save to](options.md#save-to) can turn it off for MDM alone.
 
 ## Files the browser would open
 
@@ -151,8 +151,12 @@ too. The toolbar button lists what the page has loaded, so you can still save it
   for a video, its picture size.
 
 Start the video first: the list fills as the page loads things, and it's emptied when the tab goes
-to another page. With **Prefix media file names with the page title** on, a file from the list is
-named after the page, then its own name (`The page - clip.mp4`). Click **Download** beside one: a stream opens MDM's **Download video from a page**
+to another page. Each file is listed under the name it will be saved with. A file the site sends
+through a program's address (`stream.php`, `remote_control.php`, `videoplayback`, a bare number)
+has no name of its own: it's named after the page (`The page.mp4`), or after the `file=` name in
+its address when there is one, with the type its server says it is (MP4, not PHP). With **Prefix
+media file names with the page title** on, a file with a name of its own is named after the page,
+then that name (`The page - clip.mp4`). Click **Download** beside one: a stream opens MDM's **Download video from a page**
 window, which reads its qualities (yt-dlp does the work); a file goes to MDM's list like any other
 download. Your cookies for its server, the page as the referrer and your browser's User-Agent go
 with it, as they do for a link you click.
