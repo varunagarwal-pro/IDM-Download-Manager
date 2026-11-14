@@ -34,6 +34,17 @@ pub struct Command {
     pub start_queue: bool,
     /// From the browser: request context to reuse.
     pub referer: Option<String>,
+    /// From the browser (#607): the web page the download was started from, whole (its tab's
+    /// address; a link's opened in a tab of its own, the tab that opened it), where the Referer
+    /// is often cut to the site's address by the page's referrer policy. Kept with the download:
+    /// Refresh download address opens it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_url: Option<String>,
+    /// From the browser (#900): the `Origin` its page's player sent with a video's stream or
+    /// file (`video_page`, `video_lookup`), sent again with it, its playlists and each of its
+    /// pieces, as a site's video server may serve its own pages' players only.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
     pub cookies: Option<String>,
     /// From the browser: the same cookies, each with the domain, path and flags the browser
     /// keeps for it, for yt-dlp's cookie file. yt-dlp may ask another host than the page's (a
@@ -134,6 +145,10 @@ pub struct Command {
     /// From the browser's toolbar button: leave this site's downloads (a host name) to the
     /// browser from now on (Options → File types → excluded sites).
     pub exclude_site: Option<String>,
+    /// That button's Undo (#404): the host name `exclude_site` listed is taken off the excluded
+    /// sites again (a pattern of the user's own that covers it stays).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_site: Option<String>,
 }
 
 /// One cookie as the browser keeps it (`cookies.getAll`'s fields, under the extension's names

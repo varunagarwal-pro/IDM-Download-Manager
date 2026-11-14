@@ -920,9 +920,9 @@
 #, machine
 	Checking {name} ({n} of {total})...	Sinusuri ang {name} ({n} sa {total})...
 #. text in the download list (sizes, speeds, status)
-#. a torrent's status while its files are read and checked; {percent} is how much is checked, e.g. "42%"
+#. the list's Status column while a torrent's files or a finished file are checked (against the torrent's hashes or a checksum); {percent} how much is checked, e.g. "42%". One short word: the column is narrow
 #, machine
-	Checking {percent}	Sinusuri ang {percent}
+	Checking {percent}	Sinusuri {percent}
 #. text in the Checksum window; text in the Link grabber window
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -1357,6 +1357,10 @@
 #. window title: the download button the extension shows over videos
 #, machine
 	Download panels	Mga panel ng pag-download
+#. window title in the Options window
+#. window title: Options → Downloads → Edit... (the progress window's settings)
+#, machine
+	Download progress dialog	Dialog ng pag-usad ng download
 #. text in rssdlg.rs
 #. RSS feeds window: the tab of the rules that add articles by themselves
 #, machine
@@ -2289,6 +2293,16 @@
 #. {error} = an error message (keep the braces as they are)
 #, machine
 	its files could not be written: {error}	hindi maisulat ang mga file nito: {error}
+#. text in the download list (sizes, speeds, status)
+#. why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English
+#. {error} = an error message (keep the braces as they are)
+#, machine
+	its picture and sound couldn't be joined into one file ({error})	Hindi mapagsama ang larawan at tunog nito sa isang file ({error})
+#. text in the download list (sizes, speeds, status)
+#. why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English; {files} = the downloaded parts' file names, kept in the download folder; "Also delete the file from disk" is the Delete box's choice
+#. {error} = an error message (keep the braces as they are)
+#, machine
+	its picture and sound couldn't be joined into one file ({error}). What was downloaded stays in the folder for Resume to join again ({files}); deleting the download with "Also delete the file from disk" removes it	Hindi mapagsama ang larawan at tunog nito sa isang file ({error}). Mananatili sa folder ang mga na-download na file para muling pagsamahin ng Ipagpatuloy ({files}); aalisin ang mga ito kung ide-delete ang download gamit ang "I-delete din ang file mula sa disk"
 #. text in errors.rs
 #, machine
 	its release information is not as expected: {detail}	hindi inaasahan ang impormasyon ng release nito: {detail}
@@ -2683,6 +2697,10 @@
 #, machine
 	medium	katamtaman
 #. text in the download list (sizes, speeds, status)
+#. the list's Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%". One short word: the column is narrow
+#, machine
+	Merging {percent}	Pinagsasama {percent}
+#. text in the download list (sizes, speeds, status)
 #. a video's status while its picture and sound are joined into one file (ffmpeg)
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -2737,6 +2755,10 @@
 #. crash report window heading: an internal error, MDM still running
 #, machine
 	Mister Download Manager hit an internal error	Nakaranas ang Mister Download Manager ng panloob na error
+#. text in wake.rs
+#. why the computer isn't going to sleep, in the system's list of programs that keep it awake (Windows' power requests, Linux's inhibitors)
+#, machine
+	Mister Download Manager is downloading	Nagda-download ang Mister Download Manager
 #. text in wake.rs
 #. why the computer isn't going to sleep, in the system's list of programs that keep it awake; {queue} = the queue's name
 #. {queue} = a queue name such as "Main queue" (keep the braces as they are)
@@ -4007,6 +4029,9 @@
 #. checkbox in the Options window; checkbox in a download's progress window
 #, machine
 	Show download complete dialog	Ipakita ang dialog ng kumpletong download
+#. checkbox in the Options window
+#, machine
+	Show download progress dialog when a download starts	Ipakita ang dialog ng pag-usad ng download kapag nagsimula ang download
 #. button in a dialog box
 #. button: shows these downloads in MDM's list, selected
 #, machine
@@ -4725,6 +4750,38 @@
 #. the Download video window: the site's bot check (Cloudflare) turned yt-dlp away and no browser cookies were used
 #, machine
 	The site's bot check (Cloudflare) refused yt-dlp. If the page opens in your browser, choose that browser in Options → Sites Logins → Cookies for video sites and look the page up again, or use the Download video button over the video.	Tinanggihan ng bot check ng site (Cloudflare) ang yt-dlp. Kung bumubukas ang page sa iyong browser, piliin ang browser na iyon sa Mga Opsyon → Mga Login sa Site → Cookies para sa mga video site at hanapin muli ang page, o gamitin ang button na I-download ang video sa ibabaw ng video.
+#. text in errors.rs
+#. why a download failed: the site's security certificate (what proves a secure, HTTPS, site is the one it says) is past its end date. Browsers warn about the same site
+#, machine
+	the site's security certificate has expired, so MDM can't be sure it's the real site (your browser warns about it too)	nag-expire na ang security certificate ng site, kaya hindi makakasiguro ang MDM na totoong site ito (nagbabala rin ang browser tungkol dito)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was made for other site names than the one in the address
+#, machine
+	the site's security certificate is for another site name, so MDM can't be sure it's the real site (your browser warns about it too)	ang security certificate ng site ay para sa ibang pangalan ng site, kaya hindi makakasiguro ang MDM na totoong site ito (nagbabala rin ang browser tungkol dito)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was signed by the site itself or by an issuer this computer doesn't trust. Browsers warn about the same site
+#, machine
+	the site's security certificate isn't trusted (it's self-signed or from an unknown issuer), so MDM can't be sure it's the real site (your browser warns about it too)	hindi pinagkakatiwalaan ang security certificate ng site (self-signed ito o mula sa hindi kilalang issuer), kaya hindi makakasiguro ang MDM na totoong site ito (nagbabala rin ang browser tungkol dito)
+#. text in errors.rs
+#. why a download failed: the site's security certificate's validity hasn't begun; usually this computer's date or time is wrong
+#, machine
+	the site's security certificate isn't valid yet: check this computer's date and time	hindi pa valid ang security certificate ng site: suriin ang petsa at oras ng computer na ito
+#. text in errors.rs
+#. why a download failed: the site's security certificate was refused for another reason (a bad signature, a broken certificate)
+#, machine
+	the site's security certificate was refused, so MDM can't be sure it's the real site	tinanggihan ang security certificate ng site, kaya hindi makakasiguro ang MDM na totoong site ito
+#. text in errors.rs
+#. why a download failed: the issuer of the site's security certificate took it back
+#, machine
+	the site's security certificate was revoked by its issuer, so MDM won't trust it	binawi ng issuer ang security certificate ng site, kaya hindi ito pagkakatiwalaan ng MDM
+#. text in the Download video window
+#. the Download video window: the site's certificate is trusted neither by yt-dlp nor by the computer (asked again with the computer's certificates, #955); usually an antivirus or a proxy that reads secure (HTTPS) connections signs sites with a certificate of its own
+#, machine
+	The site's certificate isn't trusted, by yt-dlp nor by this computer: an antivirus's web filter or a proxy that reads HTTPS may be in the way. Turn its HTTPS scanning off, or add its certificate to the computer's, then look the page up again.	Hindi pinagkakatiwalaan ang certificate ng site, ng yt-dlp o ng computer na ito: maaaring nakaharang ang web filter ng antivirus o isang proxy na nagbabasa ng HTTPS. I-off ang HTTPS scanning nito, o idagdag ang certificate nito sa computer, pagkatapos ay hanapin muli ang page.
+#. text in errors.rs
+#. why a download failed: the site's security certificate is made for other uses than a website (its "extended key usage" leaves out web servers)
+#, machine
+	the site's security certificate isn't made for websites, so MDM can't be sure it's the real site	ang security certificate ng site ay hindi ginawa para sa mga website, kaya hindi makakasiguro ang MDM na ito ang totoong site
 #. text in crashui.rs
 #. crash report window: the symbols couldn't be downloaded; the report still works
 #, machine
@@ -5191,6 +5248,7 @@
 #, machine
 	United States Minor Outlying Islands	United States Minor Outlying Islands
 #. text in a download's Properties window
+#. the web page is not known
 #, machine
 	Unknown	Hindi Alam
 #. text in a dialog box; text in a download's progress window; text in whereis.rs
@@ -5437,6 +5495,9 @@
 #. remote control page (on a phone): label of the choice: start the new download now, or let it wait in a queue
 #, machine
 	When	Kailan
+#. text in the Options window
+#, machine
+	When it is off, downloads go on in the main window's list. Double-click one there to see its progress.	Kapag naka-off ito, magpapatuloy ang mga download sa listahan ng pangunahing window. I-double-click ang isa doon para makita ang pag-usad nito.
 #. text in the Batch download window
 #, machine
 	Wildcard size	Laki ng wildcard
@@ -5828,14 +5889,6 @@
 #. a torrent's status while the user's debrid service downloads it, before MDM gets its files; {service} the service ("Real-Debrid"), {percent} how far it is ("45%")
 #, machine
 	{percent} at {service}	{percent} sa {service}
-#. text in the download list (sizes, speeds, status)
-#. the list's narrow Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%": keep it first, the column is narrow
-#, machine
-	{percent} merged	{percent} pinagsama
-#. text in the download list (sizes, speeds, status)
-#. the list's narrow Status column while the finished file is checked against its checksum; {percent} how much is checked, e.g. "45%": keep it first, the column is narrow
-#, machine
-	{percent} verified	{percent} na-verify
 #. text in errors.rs
 #, machine
 	{problem} ({cause})	{problem} ({cause})
@@ -6370,6 +6423,10 @@ extension	This page's player streams its video in pieces, so there's no file to 
 #, machine
 extension	Turn on	I-on
 #. text in the browser extension
+#. link beside "Downloads from <site> stay with the browser" in the toolbar button's popup: take the site off the excluded sites again
+#, machine
+extension	Undo	I-undo
+#. text in the browser extension
 #. status when the app is older than the extension; keep the name Mister Download Manager as it is
 #, machine
 extension	Update Mister Download Manager to use everything this extension offers	I-update ang Mister Download Manager para magamit ang lahat ng iniaalok ng extension na ito
@@ -6502,10 +6559,10 @@ menu	&About Mister Download Manager	&Tungkol sa Mister Download Manager
 #, machine
 menu	&Add new download	&Magdagdag ng bagong download
 #. menu command in the main window
+#. View → Window system: MDM chooses the window system itself at each start
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#. the trailing ... means it opens a window: keep it
 #, machine
-menu	&Add new download...	&Magdagdag ng bagong download...
+menu	&Automatic	&Awtomatiko
 #. menu command in the main window
 #. View → Text: letters drawn the classic way, hinted to whole pixels (crisp, coarse on a dense screen)
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
@@ -6611,11 +6668,6 @@ menu	&Stop All	&Ihinto Lahat
 #, machine
 menu	&Stop Download	&Ihinto ang Download
 #. menu command in the main window
-#. View menu: submenu choosing how the text is drawn (smooth or classic)
-#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#, machine
-menu	&Text	&Text
-#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	&Tray icon	&Icon ng tray
@@ -6632,6 +6684,21 @@ menu	&Undo	I-&undo
 #, machine
 menu	&Video downloads	&Mga download ng video
 #. menu command in the main window
+#. View → Window system: Wayland's own windows (the name of a Linux display system, usually kept as is)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&Wayland	&Wayland
+#. menu command in the main window
+#. View menu: submenu choosing the window system MDM's windows use on Linux (X11 through XWayland, or Wayland)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&Window system	Sistema ng &window
+#. menu command in the main window
+#. View → Window system: X11's windows, through XWayland in a Wayland session (names of Linux display systems, usually kept as is)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&X11 (XWayland)	&X11 (XWayland)
+#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Add &batch download	Magdagdag ng &batch download
@@ -6640,6 +6707,11 @@ menu	Add &batch download	Magdagdag ng &batch download
 #. the trailing ... means it opens a window: keep it
 #, machine
 menu	Add &magnet link...	Magdagdag ng &magnet link...
+#. menu command in the main window
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#. the trailing ... means it opens a window: keep it
+#, machine
+menu	Add &new download...	&Magdagdag ng bagong download...
 #. menu command in the main window
 #. View → Theme: picks a theme file or a Base16 or pywal colour scheme, copies it into the themes folder and uses it
 #, machine
@@ -6725,7 +6797,7 @@ menu	By Save &Path	Ayon sa Save &Path
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
-menu	By St&atus	Ayon sa St&atus
+menu	By Stat&us	Ayon sa St&atus
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
@@ -6773,6 +6845,10 @@ menu	Delete from queue	Tanggalin mula sa queue
 #. View → Draw with: a graphics system's name (Microsoft's), usually kept as is
 #, machine
 menu	Direct3D	Direct3D
+#. menu command in the main window
+#. View → Draw with: a greyed note; what draws the windows and why: Direct3D 12 through Windows' own software renderer (WARP, keep the name), because this computer's graphics card has no Direct3D 12 driver
+#, machine
+menu	Direct3D 12 (WARP): this graphics card has no Direct3D 12 driver	Direct3D 12 (WARP): walang Direct3D 12 driver ang graphics card na ito
 #. menu command in the main window
 #. View → Draw with: a greyed note; Direct3D failed on this computer, so OpenGL draws the windows
 #, machine
@@ -6851,6 +6927,14 @@ menu	Hide drop target	Itago ang drop target
 #, machine
 menu	High contrast	Mataas na contrast
 #. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are Wayland's now
+#, machine
+menu	In use: Wayland	Kasalukuyang ginagamit: Wayland
+#. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are X11's (through XWayland) now
+#, machine
+menu	In use: X11 (XWayland)	Kasalukuyang ginagamit: X11 (XWayland)
+#. menu command in the main window
 #. View → Draw with: a greyed note under "… didn't start here"; why: another error, written in MDM's log
 #, machine
 menu	It couldn't start: the log says why	Hindi ito makapagsimula: sinasabi ng log kung bakit
@@ -6926,9 +7010,25 @@ menu	Open with...	Buksan gamit ang...
 #, machine
 menu	OpenGL	OpenGL
 #. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: it couldn't start on this computer
+#, machine
+menu	OpenGL didn't start here	Hindi nagsimula ang OpenGL dito
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window froze inside the graphics card's driver while OpenGL drew
+#, machine
+menu	OpenGL froze inside the graphics driver here	Nag-freeze ang window ng OpenGL sa graphics driver dito
+#. menu command in the main window
 #. View → Draw with: a greyed note; this computer's OpenGL (its graphics driver) is too old, so MDM doesn't draw with it
 #, machine
 menu	OpenGL here is too old to draw MDM	Masyadong luma ang OpenGL dito para mag-drawing ng MDM
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window stayed empty for 10 seconds, so MDM started again another way
+#, machine
+menu	OpenGL's first frame didn't show within 10 seconds	Hindi lumabas ang unang frame ng OpenGL sa loob ng 10 segundo
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: MDM crashed or was closed while starting with it
+#, machine
+menu	OpenGL's last start ended before its first frame	Natigil ang huling pagsisimula ng OpenGL bago maipakita ang unang frame nito
 #. menu command in the main window
 #. what double-clicking a download does — noun: show its properties
 #. noun: opens the download's Properties window
@@ -7025,6 +7125,11 @@ menu	Stop Download	Ihinto ang download
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Support &MDM	Suportahan ang &MDM
+#. menu command in the main window
+#. View menu: submenu choosing how the text is drawn (smooth or classic)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	Te&xt	&Text
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine

@@ -920,9 +920,9 @@
 #, machine
 	Checking {name} ({n} of {total})...	S'està comprovant {name} ({n} de {total})...
 #. text in the download list (sizes, speeds, status)
-#. a torrent's status while its files are read and checked; {percent} is how much is checked, e.g. "42%"
+#. the list's Status column while a torrent's files or a finished file are checked (against the torrent's hashes or a checksum); {percent} how much is checked, e.g. "42%". One short word: the column is narrow
 #, machine
-	Checking {percent}	S’està comprovant el {percent}
+	Checking {percent}	S’està comprovant {percent}
 #. text in the Checksum window; text in the Link grabber window
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -1357,6 +1357,10 @@
 #. window title: the download button the extension shows over videos
 #, machine
 	Download panels	Panells de baixada
+#. window title in the Options window
+#. window title: Options → Downloads → Edit... (the progress window's settings)
+#, machine
+	Download progress dialog	Quadre de diàleg de progrés de la baixada
 #. text in rssdlg.rs
 #. RSS feeds window: the tab of the rules that add articles by themselves
 #, machine
@@ -2289,6 +2293,16 @@
 #. {error} = an error message (keep the braces as they are)
 #, machine
 	its files could not be written: {error}	no s'han pogut escriure els seus fitxers: {error}
+#. text in the download list (sizes, speeds, status)
+#. why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English
+#. {error} = an error message (keep the braces as they are)
+#, machine
+	its picture and sound couldn't be joined into one file ({error})	No s’han pogut unir la imatge i el so en un sol fitxer ({error})
+#. text in the download list (sizes, speeds, status)
+#. why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English; {files} = the downloaded parts' file names, kept in the download folder; "Also delete the file from disk" is the Delete box's choice
+#. {error} = an error message (keep the braces as they are)
+#, machine
+	its picture and sound couldn't be joined into one file ({error}). What was downloaded stays in the folder for Resume to join again ({files}); deleting the download with "Also delete the file from disk" removes it	no s’han pogut unir la imatge i el so en un sol fitxer ({error}). El que s’ha baixat es queda a la carpeta perquè la funció de reprendre ho torni a unir ({files}); si suprimeixes la baixada amb «Suprimeix també el fitxer del disc», s’eliminarà
 #. text in errors.rs
 #, machine
 	its release information is not as expected: {detail}	la informació de la seva versió no és l'esperada: {detail}
@@ -2683,6 +2697,10 @@
 #, machine
 	medium	mitjana
 #. text in the download list (sizes, speeds, status)
+#. the list's Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%". One short word: the column is narrow
+#, machine
+	Merging {percent}	S’està fusionant {percent}
+#. text in the download list (sizes, speeds, status)
 #. a video's status while its picture and sound are joined into one file (ffmpeg)
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -2737,6 +2755,10 @@
 #. crash report window heading: an internal error, MDM still running
 #, machine
 	Mister Download Manager hit an internal error	Mister Download Manager ha trobat un error intern
+#. text in wake.rs
+#. why the computer isn't going to sleep, in the system's list of programs that keep it awake (Windows' power requests, Linux's inhibitors)
+#, machine
+	Mister Download Manager is downloading	Mister Download Manager està baixant
 #. text in wake.rs
 #. why the computer isn't going to sleep, in the system's list of programs that keep it awake; {queue} = the queue's name
 #. {queue} = a queue name such as "Main queue" (keep the braces as they are)
@@ -4007,6 +4029,9 @@
 #. checkbox in the Options window; checkbox in a download's progress window
 #, machine
 	Show download complete dialog	Mostra el diàleg de baixada completada
+#. checkbox in the Options window
+#, machine
+	Show download progress dialog when a download starts	Mostra el quadre de diàleg de progrés de la baixada quan s’inicia una baixada
 #. button in a dialog box
 #. button: shows these downloads in MDM's list, selected
 #, machine
@@ -4725,6 +4750,38 @@
 #. the Download video window: the site's bot check (Cloudflare) turned yt-dlp away and no browser cookies were used
 #, machine
 	The site's bot check (Cloudflare) refused yt-dlp. If the page opens in your browser, choose that browser in Options → Sites Logins → Cookies for video sites and look the page up again, or use the Download video button over the video.	La comprovació de bot del lloc (Cloudflare) ha rebutjat yt-dlp. Si la pàgina s’obre al navegador, tria aquest navegador a Opcions → Inicis de sessió de llocs → Galetes per a llocs de vídeo i torna a cercar la pàgina, o fes servir el botó Baixa el vídeo sobre el vídeo.
+#. text in errors.rs
+#. why a download failed: the site's security certificate (what proves a secure, HTTPS, site is the one it says) is past its end date. Browsers warn about the same site
+#, machine
+	the site's security certificate has expired, so MDM can't be sure it's the real site (your browser warns about it too)	el certificat de seguretat del lloc ha caducat, de manera que MDM no pot assegurar-se que sigui el lloc real (el navegador també t’avisa)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was made for other site names than the one in the address
+#, machine
+	the site's security certificate is for another site name, so MDM can't be sure it's the real site (your browser warns about it too)	el certificat de seguretat del lloc és per a un altre nom de lloc, de manera que MDM no pot assegurar-se que sigui el lloc real (el navegador també t’avisa)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was signed by the site itself or by an issuer this computer doesn't trust. Browsers warn about the same site
+#, machine
+	the site's security certificate isn't trusted (it's self-signed or from an unknown issuer), so MDM can't be sure it's the real site (your browser warns about it too)	el certificat de seguretat del lloc no és de confiança (està autofirmat o prové d’un emissor desconegut), de manera que MDM no pot assegurar-se que sigui el lloc real (el navegador també t’avisa)
+#. text in errors.rs
+#. why a download failed: the site's security certificate's validity hasn't begun; usually this computer's date or time is wrong
+#, machine
+	the site's security certificate isn't valid yet: check this computer's date and time	el certificat de seguretat del lloc encara no és vàlid: comprova la data i l’hora d’aquest ordinador
+#. text in errors.rs
+#. why a download failed: the site's security certificate was refused for another reason (a bad signature, a broken certificate)
+#, machine
+	the site's security certificate was refused, so MDM can't be sure it's the real site	el certificat de seguretat del lloc s’ha rebutjat, de manera que MDM no pot assegurar-se que sigui el lloc real
+#. text in errors.rs
+#. why a download failed: the issuer of the site's security certificate took it back
+#, machine
+	the site's security certificate was revoked by its issuer, so MDM won't trust it	el certificat de seguretat del lloc ha estat revocat pel seu emissor, de manera que MDM no hi confiarà
+#. text in the Download video window
+#. the Download video window: the site's certificate is trusted neither by yt-dlp nor by the computer (asked again with the computer's certificates, #955); usually an antivirus or a proxy that reads secure (HTTPS) connections signs sites with a certificate of its own
+#, machine
+	The site's certificate isn't trusted, by yt-dlp nor by this computer: an antivirus's web filter or a proxy that reads HTTPS may be in the way. Turn its HTTPS scanning off, or add its certificate to the computer's, then look the page up again.	El certificat del lloc no és de confiança ni per a yt-dlp ni per a aquest ordinador: el filtre web d’un antivirus o un servidor intermediari que llegeix connexions HTTPS pot interferir-hi. Desactiva l’escaneig HTTPS o instal·la’n el certificat a l’ordinador i, a continuació, torna a consultar la pàgina.
+#. text in errors.rs
+#. why a download failed: the site's security certificate is made for other uses than a website (its "extended key usage" leaves out web servers)
+#, machine
+	the site's security certificate isn't made for websites, so MDM can't be sure it's the real site	el certificat de seguretat del lloc no està fet per a llocs web, de manera que l’MDM no pot assegurar-se que sigui el lloc real
 #. text in crashui.rs
 #. crash report window: the symbols couldn't be downloaded; the report still works
 #, machine
@@ -5191,6 +5248,7 @@
 #, machine
 	United States Minor Outlying Islands	Illes Perifèriques Menors dels Estats Units
 #. text in a download's Properties window
+#. the web page is not known
 #, machine
 	Unknown	Desconegut
 #. text in a dialog box; text in a download's progress window; text in whereis.rs
@@ -5437,6 +5495,9 @@
 #. remote control page (on a phone): label of the choice: start the new download now, or let it wait in a queue
 #, machine
 	When	Quan
+#. text in the Options window
+#, machine
+	When it is off, downloads go on in the main window's list. Double-click one there to see its progress.	Quan està desactivat, les baixades continuen a la llista de la finestra principal. Fes-hi doble clic per veure’n el progrés.
 #. text in the Batch download window
 #, machine
 	Wildcard size	Mida del comodí
@@ -5828,14 +5889,6 @@
 #. a torrent's status while the user's debrid service downloads it, before MDM gets its files; {service} the service ("Real-Debrid"), {percent} how far it is ("45%")
 #, machine
 	{percent} at {service}	{percent} a {service}
-#. text in the download list (sizes, speeds, status)
-#. the list's narrow Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%": keep it first, the column is narrow
-#, machine
-	{percent} merged	{percent} fusionat
-#. text in the download list (sizes, speeds, status)
-#. the list's narrow Status column while the finished file is checked against its checksum; {percent} how much is checked, e.g. "45%": keep it first, the column is narrow
-#, machine
-	{percent} verified	{percent} verificat
 #. text in errors.rs
 #, machine
 	{problem} ({cause})	{problem} ({cause})
@@ -6370,6 +6423,10 @@ extension	This page's player streams its video in pieces, so there's no file to 
 #, machine
 extension	Turn on	Activa
 #. text in the browser extension
+#. link beside "Downloads from <site> stay with the browser" in the toolbar button's popup: take the site off the excluded sites again
+#, machine
+extension	Undo	Desfés
+#. text in the browser extension
 #. status when the app is older than the extension; keep the name Mister Download Manager as it is
 #, machine
 extension	Update Mister Download Manager to use everything this extension offers	Actualitza Mister Download Manager per aprofitar tot el que ofereix aquesta extensió
@@ -6502,10 +6559,10 @@ menu	&About Mister Download Manager	Quant a &Mister Download Manager
 #, machine
 menu	&Add new download	Afegeix una baixada &nova
 #. menu command in the main window
+#. View → Window system: MDM chooses the window system itself at each start
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#. the trailing ... means it opens a window: keep it
 #, machine
-menu	&Add new download...	A&fegeix una baixada nova...
+menu	&Automatic	Au&tomàtic
 #. menu command in the main window
 #. View → Text: letters drawn the classic way, hinted to whole pixels (crisp, coarse on a dense screen)
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
@@ -6611,11 +6668,6 @@ menu	&Stop All	&Atura-ho tot
 #, machine
 menu	&Stop Download	&Atura la baixada
 #. menu command in the main window
-#. View menu: submenu choosing how the text is drawn (smooth or classic)
-#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#, machine
-menu	&Text	&Text
-#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	&Tray icon	Icona de la &safata
@@ -6632,6 +6684,21 @@ menu	&Undo	&Desfés
 #, machine
 menu	&Video downloads	Baixades de &vídeos
 #. menu command in the main window
+#. View → Window system: Wayland's own windows (the name of a Linux display system, usually kept as is)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&Wayland	&Wayland
+#. menu command in the main window
+#. View menu: submenu choosing the window system MDM's windows use on Linux (X11 through XWayland, or Wayland)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&Window system	Sistema de &finestres
+#. menu command in the main window
+#. View → Window system: X11's windows, through XWayland in a Wayland session (names of Linux display systems, usually kept as is)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&X11 (XWayland)	&X11 (XWayland)
+#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Add &batch download	Afegeix baixada per &lots
@@ -6640,6 +6707,11 @@ menu	Add &batch download	Afegeix baixada per &lots
 #. the trailing ... means it opens a window: keep it
 #, machine
 menu	Add &magnet link...	Afegeix un enllaç &magnet...
+#. menu command in the main window
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#. the trailing ... means it opens a window: keep it
+#, machine
+menu	Add &new download...	A&fegeix una baixada nova...
 #. menu command in the main window
 #. View → Theme: picks a theme file or a Base16 or pywal colour scheme, copies it into the themes folder and uses it
 #, machine
@@ -6725,7 +6797,7 @@ menu	By Save &Path	Per &ruta de desament
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
-menu	By St&atus	Per e&stat
+menu	By Stat&us	Per e&stat
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
@@ -6773,6 +6845,10 @@ menu	Delete from queue	Suprimeix de la cua
 #. View → Draw with: a graphics system's name (Microsoft's), usually kept as is
 #, machine
 menu	Direct3D	Direct3D
+#. menu command in the main window
+#. View → Draw with: a greyed note; what draws the windows and why: Direct3D 12 through Windows' own software renderer (WARP, keep the name), because this computer's graphics card has no Direct3D 12 driver
+#, machine
+menu	Direct3D 12 (WARP): this graphics card has no Direct3D 12 driver	Direct3D 12 (WARP): aquesta targeta gràfica no té cap controlador Direct3D 12
 #. menu command in the main window
 #. View → Draw with: a greyed note; Direct3D failed on this computer, so OpenGL draws the windows
 #, machine
@@ -6851,6 +6927,14 @@ menu	Hide drop target	Amaga la destinació d'arrossegament
 #, machine
 menu	High contrast	Contrast alt
 #. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are Wayland's now
+#, machine
+menu	In use: Wayland	En ús: Wayland
+#. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are X11's (through XWayland) now
+#, machine
+menu	In use: X11 (XWayland)	En ús: X11 (XWayland)
+#. menu command in the main window
 #. View → Draw with: a greyed note under "… didn't start here"; why: another error, written in MDM's log
 #, machine
 menu	It couldn't start: the log says why	No s'ha pogut iniciar: el registre n'indica el motiu
@@ -6926,9 +7010,25 @@ menu	Open with...	Obre amb...
 #, machine
 menu	OpenGL	OpenGL
 #. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: it couldn't start on this computer
+#, machine
+menu	OpenGL didn't start here	OpenGL no s’ha pogut iniciar en aquest ordinador
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window froze inside the graphics card's driver while OpenGL drew
+#, machine
+menu	OpenGL froze inside the graphics driver here	OpenGL s’ha bloquejat al controlador de gràfics
+#. menu command in the main window
 #. View → Draw with: a greyed note; this computer's OpenGL (its graphics driver) is too old, so MDM doesn't draw with it
 #, machine
 menu	OpenGL here is too old to draw MDM	L'OpenGL d'aquí és massa antic per dibuixar l'MDM
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window stayed empty for 10 seconds, so MDM started again another way
+#, machine
+menu	OpenGL's first frame didn't show within 10 seconds	El primer fotograma d’OpenGL no s’ha mostrat en 10 segons
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: MDM crashed or was closed while starting with it
+#, machine
+menu	OpenGL's last start ended before its first frame	L’últim inici d’OpenGL ha acabat abans del primer fotograma
 #. menu command in the main window
 #. what double-clicking a download does — noun: show its properties
 #. noun: opens the download's Properties window
@@ -7025,6 +7125,11 @@ menu	Stop Download	Atura la baixada
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Support &MDM	Dona suport a &MDM
+#. menu command in the main window
+#. View menu: submenu choosing how the text is drawn (smooth or classic)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	Te&xt	&Text
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine

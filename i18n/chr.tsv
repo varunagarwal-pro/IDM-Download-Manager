@@ -905,10 +905,6 @@
 #. the trailing ... means it is still going on: keep it
 #, machine
 	Checking {name} ({n} of {total})...	ᎠᎪᎵᏰᏗ {name} ({n} ᎤᎾᏓᏑᏴ {total})...
-#. text in the download list (sizes, speeds, status)
-#. a torrent's status while its files are read and checked; {percent} is how much is checked, e.g. "42%"
-#, machine
-	Checking {percent}	ᎠᎾᎦᏔᎲᏍᎬ {percent}
 #. text in the Checksum window; text in the Link grabber window
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -3923,6 +3919,9 @@
 #. checkbox in the Options window; checkbox in a download's progress window
 #, machine
 	Show download complete dialog	ᎬᏂᎨᏒᎢ ᏗᎦᏃᏍᏓᏁᏗ ᎤᏍᏆᏛᎯ ᎧᏃᎮᏗ
+#. checkbox in the Options window
+#, machine
+	Show download progress dialog when a download starts	ᎬᏂᎨᏒᎢ ᏗᎦᏟᏏᏍᏗ ᎦᎴᏴᏔᏅᎯ ᎦᎴᏴᏔᏅᎯ ᎢᏳᏃ ᏗᎦᏟᏏᏍᏗ ᎤᎾᎴᏅᎲᏍᎬᎢ
 #. button in a dialog box
 #. button: shows these downloads in MDM's list, selected
 #, machine
@@ -4619,6 +4618,30 @@
 #. the Download video window: the site's bot check (Cloudflare) turned yt-dlp away and no browser cookies were used
 #, machine
 	The site's bot check (Cloudflare) refused yt-dlp. If the page opens in your browser, choose that browser in Options → Sites Logins → Cookies for video sites and look the page up again, or use the Download video button over the video.	Cloudflare ᏚᏲᏍᏔᏅᎢ yt-dlp. ᎢᏳᏃ ᏗᎪᏪᎵ ᎤᎵᏍᏚᎢᏒᎢ ᏗᏣᏃᏟᏍᏙᏗ, ᎾᏍᎩ ᏗᏣᏃᏟᏍᏙᏗ ᎾᎿ ᏗᎪᏪᎵ → ᏗᎪᏪᎵ ᏗᎪᏪᎵ → ᏗᎪᏪᎵ ᏗᎪᏪᎵ ᎠᎴ ᏔᎵᏁ ᎪᏢᎾ ᏗᎪᏪᎵ, ᎠᎴ ᎢᏗᏴᏔᏅᎢ ᏗᎪᏪᎵ ᏗᎪᏪᎵ ᎦᎸᎳᏗᏢ ᏗᎪᏪᎵ.
+#. text in errors.rs
+#. why a download failed: the site's security certificate (what proves a secure, HTTPS, site is the one it says) is past its end date. Browsers warn about the same site
+#, machine
+	the site's security certificate has expired, so MDM can't be sure it's the real site (your browser warns about it too)	ᎯᎠ ᎢᎬᎾᏗ ᎤსᏓᎵᎩ ᎤᏚᏓᎴᏍᏗ ᎨᏒ ᎤᏍᏆᏛ, so MDM can't be sure it's the real site (your browser warns about it too)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was made for other site names than the one in the address
+#, machine
+	the site's security certificate is for another site name, so MDM can't be sure it's the real site (your browser warns about it too)	ᎯᎠ ᎢᎬᎾᏗ ᎤსᏓᎵᎩ ᎤᏚᏓᎴᏍᏗ ᎨᏒ ᎤᏓᏁᎸ ᏅᏩᏓᎴ ᎢᎬᎾᏗ ᏚᏙᎥ, so MDM can't be sure it's the real site (your browser warns about it too)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was signed by the site itself or by an issuer this computer doesn't trust. Browsers warn about the same site
+#, machine
+	the site's security certificate isn't trusted (it's self-signed or from an unknown issuer), so MDM can't be sure it's the real site (your browser warns about it too)	ᎯᎠ ᎢᎬᎾᏗ ᎤსᏓᎵᎩ ᎤᏚᏓᎴᏍᏗ ᎨᏒ ᎥᏝ ᏱᏚᏳᎪᏛ (it's self-signed or from an unknown issuer), so MDM can't be sure it's the real site (your browser warns about it too)
+#. text in errors.rs
+#. why a download failed: the site's security certificate's validity hasn't begun; usually this computer's date or time is wrong
+#, machine
+	the site's security certificate isn't valid yet: check this computer's date and time	ᏗᎪᏪᎶᏗ ᏗᏕᎬᏔᏅᎢ ᎤᎾᏕᎳᎰᎯᏍᏗ: ᏗᎪᏪᎶᏗ ᏗᏕᎬᏔᏅᎢ ᎤᎾᏕᎳᎰᎯᏍᏗ, ᎠᎴ ᏗᎪᏪᎶᏗ ᏗᏕᎬᏔᏅᎢ ᎤᎾᏕᎳᎰᎯᏍᏗ
+#. text in errors.rs
+#. why a download failed: the site's security certificate was refused for another reason (a bad signature, a broken certificate)
+#, machine
+	the site's security certificate was refused, so MDM can't be sure it's the real site	ᎯᎠ ᎢᎬᎾᏗ ᎤსᏓᎵᎩ ᎤᏚᏓᎴᏍᏗ ᎨᏒ ᎤᏓᏁᎸ ᎥᏝ ᏱᏚᏳᎪᏛ, so MDM can't be sure it's the real site
+#. text in errors.rs
+#. why a download failed: the issuer of the site's security certificate took it back
+#, machine
+	the site's security certificate was revoked by its issuer, so MDM won't trust it	ᎯᎠ ᎢᎬᎾᏗ ᎤსᏓᎵᎩ ᎤᏚᏓᎴᏍᏗ ᎨᏒ ᎤᏓᏁᎸ ᎤᏲᏨ by its issuer, so MDM won't trust it
 #. text in crashui.rs
 #. crash report window: the symbols couldn't be downloaded; the report still works
 #, machine
@@ -5076,6 +5099,7 @@
 #, machine
 	United States Minor Outlying Islands	ᎤᎾᎵᎪᏒᎯ ᏍᏓᏗᎢ ᏧᎾᏍᏗ ᏙᏱᏗᏢ ᏚᎦᏚᏛᎢ
 #. text in a download's Properties window
+#. the web page is not known
 #, machine
 	Unknown	ᏄᏬᎵᏍᏔᏅᎾ
 #. text in a dialog box; text in a download's progress window; text in whereis.rs
@@ -5318,6 +5342,9 @@
 #. remote control page (on a phone): label of the choice: start the new download now, or let it wait in a queue
 #, machine
 	When	ᎢᏳ
+#. text in the Options window
+#, machine
+	When it is off, downloads go on in the main window's list. Double-click one there to see its progress.	ᎢᏳᏃ ᎤᎾᏕᏴᎲᏍᎬᎢ, ᏗᎦᏟᏏᏍᏗ ᎤᎾᏕᏴᎲᏍᎬᎢ ᎾᎿ ᏗᎦᏟᏏᏍᏗ. ᏔᎵᏁ ᎢᎦᏟᏏᏍᏗ ᎾᎿ ᏗᎦᏟᏏᏍᏗ ᎤᎾᏕᏴᎲᏍᎬᎢ.
 #. text in the Batch download window
 #, machine
 	Wildcard size	Wildcard ᎤᏍᎪᏂᏗ
@@ -6207,6 +6234,10 @@ extension	This page's player streams its video in pieces, so there's no file to 
 #, machine
 extension	Turn on	ᏗᏓᎴᏔᏅᎢ
 #. text in the browser extension
+#. link beside "Downloads from <site> stay with the browser" in the toolbar button's popup: take the site off the excluded sites again
+#, machine
+extension	Undo	ᏔᎵᏁ ᏔᏚᎵ
+#. text in the browser extension
 #. status when the app is older than the extension; keep the name Mister Download Manager as it is
 #, machine
 extension	Update Mister Download Manager to use everything this extension offers	ᎤᎾᏕᎳᎰᏒᎢ Mister Download Manager ᎤᎾᏕᎳᎰᏒᎢ ᎯᎠ ᎾᎿᏉ ᎤᎾᏕᎳᎰᏒᎢ
@@ -6339,10 +6370,10 @@ menu	&About Mister Download Manager	&Mister Download Manager ᎤᎬᏩᎵ
 #, machine
 menu	&Add new download	Ꭲ&ᏓᏁᏟᏴᏓ ᎢᏤ ᏗᎦᏁᏟᏴᏗ
 #. menu command in the main window
+#. View → Window system: MDM chooses the window system itself at each start
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#. the trailing ... means it opens a window: keep it
 #, machine
-menu	&Add new download...	Ꭲ&ᏓᏁᏟᏴᏓ ᎢᏤ ᎭᏓᎴᎯᏍᏗ...
+menu	&Automatic	Ꮎ&ᎪᏪᎸ
 #. menu command in the main window
 #. View → Text: letters drawn the classic way, hinted to whole pixels (crisp, coarse on a dense screen)
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
@@ -6448,11 +6479,6 @@ menu	&Stop All	&ᏂᎦᏗᏳ ᎠᏑᏰᏍᏗ
 #, machine
 menu	&Stop Download	&ᎠᏑᏰᏍᏗ ᏗᎦᏁᏟᏴᏗ
 #. menu command in the main window
-#. View menu: submenu choosing how the text is drawn (smooth or classic)
-#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#, machine
-menu	&Text	&ᏗᎪᏪᎵ
-#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	&Tray icon	&ᏗᏟᎶᏍᏔᏅ ᎦᏁᎳ
@@ -6469,6 +6495,11 @@ menu	&Undo	ᏔᎵᏁ &ᏂᎦᎵᏍᏔᏅᏗ
 #, machine
 menu	&Video downloads	&ᏗᏟᎶᏍᏔᏅ ᏗᎦᏁᏟᏴᏗ
 #. menu command in the main window
+#. View menu: submenu choosing the window system MDM's windows use on Linux (X11 through XWayland, or Wayland)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&Window system	&ᏙᎾᏗᏒᎢ ᏗᏟᎶᏍᏔᏅᎢ
+#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Add &batch download	Ꭲ&ᏓᏁᏟᏴᏓ ᎤᏂᎪᏗᏗ ᏗᎦᏁᏟᏴᏗ
@@ -6477,6 +6508,11 @@ menu	Add &batch download	Ꭲ&ᏓᏁᏟᏴᏓ ᎤᏂᎪᏗᏗ ᏗᎦᏁᏟᏴᏗ
 #. the trailing ... means it opens a window: keep it
 #, machine
 menu	Add &magnet link...	Ꭲ&ᏓᏁᏟᏴᏓ ᏗᎦᏁᏟᏴᏗ ᏗᏟᎶᏍᏔᏅ...
+#. menu command in the main window
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#. the trailing ... means it opens a window: keep it
+#, machine
+menu	Add &new download...	Ꭲ&ᏓᏁᏟᏴᏓ ᎢᏤ ᎭᏓᎴᎯᏍᏗ...
 #. menu command in the main window
 #. View → Theme: picks a theme file or a Base16 or pywal colour scheme, copies it into the themes folder and uses it
 #, machine
@@ -6562,7 +6598,7 @@ menu	By Save &Path	Ꮧ&ᏓᏟᏍᏔᏅᎯ ᎢᏗᏁᏟᏴᏍᏗ
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
-menu	By St&atus	Ꮧ&ᏓᏟᏍᏔᏅᎯ ᎢᏗᏁᏟᏴᏍᏗ
+menu	By Stat&us	Ꮧ&ᏓᏟᏍᏔᏅᎯ ᎢᏗᏁᏟᏴᏍᏗ
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
@@ -6611,9 +6647,17 @@ menu	Delete from queue	ᏗᏓᏟᏍᏔᏅᎯ ᎢᏗᏁᏟᏴᏍᏗ
 #, machine
 menu	Direct3D	Direct3D
 #. menu command in the main window
+#. View → Draw with: a greyed note; what draws the windows and why: Direct3D 12 through Windows' own software renderer (WARP, keep the name), because this computer's graphics card has no Direct3D 12 driver
+#, machine
+menu	Direct3D 12 (WARP): this graphics card has no Direct3D 12 driver	Direct3D 12 (WARP): ᎯᎠ ᏗᏟᎶᏍᏔᏅᎢ ᎢᏗᏢᏅᏗ ᎥᏝ Direct3D 12 ᏗᏟᎶᏍᏔᏅᎢ ᎢᏗᏢᏅᏗ ᏱᎩ
+#. menu command in the main window
 #. View → Draw with: a greyed note; Direct3D failed on this computer, so OpenGL draws the windows
 #, machine
 menu	Direct3D didn't start here: OpenGL draws	Direct3D ᎥᏝ ᏳᎴᏅᎮ ᎠᏂ: OpenGL ᏕᎪᏪᎵᏍᎪᎢ
+#. menu command in the main window
+#. View → Draw with: a greyed note; Direct3D draws the windows through Windows' own software renderer (WARP) instead of a graphics card
+#, machine
+menu	Direct3D draws with Windows' software renderer (WARP)	Direct3D Windows' software renderer (WARP) ᎬᏗᎭ
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #. the trailing ... means it opens a window: keep it
@@ -6684,6 +6728,14 @@ menu	Hide drop target	ᏗᏓᏟᏍᏔᏅᎯ ᎢᏗᏁᏟᏴᏍᏗ
 #, machine
 menu	High contrast	ᎦᎸᎳᏗᏢ ᎬᏂᎨᏒᎢ
 #. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are Wayland's now
+#, machine
+menu	In use: Wayland	ᎦᏙᎬᎢ: Wayland
+#. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are X11's (through XWayland) now
+#, machine
+menu	In use: X11 (XWayland)	ᎦᏙᎬᎢ: X11 (XWayland)
+#. menu command in the main window
 #. View → Draw with: a greyed note under "… didn't start here"; why: another error, written in MDM's log
 #, machine
 menu	It couldn't start: the log says why	ᎠᎴᏅᏗᏱ ᎢᎬᏩᏁᎸᎯ ᎥᏝ: ᏗᎪᏪᎵ ᎦᏛᎬᏍᏗᎭ
@@ -6707,6 +6759,10 @@ menu	Metal	Metal
 #. View → Draw with: a greyed note; Metal failed on this computer, so OpenGL draws the windows
 #, machine
 menu	Metal didn't start here: OpenGL draws	Metal ᎥᏝ ᏳᎴᏅᏔᏃ: OpenGL ᏕᎬᎪᏍᏗ
+#. menu command in the main window
+#. View → Draw with: a greyed note; Metal draws the windows through a software renderer instead of a graphics card
+#, machine
+menu	Metal draws with a software renderer	Metal software renderer ᎬᏗᎭ
 #. menu command in the main window
 #. View → Theme: a style theme's name (Windows 8's flat look); keep "Metro" unless your language writes it otherwise
 #, machine
@@ -6754,6 +6810,26 @@ menu	Open with...	ᎤᏍᏚᎢᏍᏗ...
 #. View → Draw with: a graphics system's name, usually kept as is
 #, machine
 menu	OpenGL	OpenGL
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: it couldn't start on this computer
+#, machine
+menu	OpenGL didn't start here	OpenGL ᎥᏝ ᎤᎴᏅᎲ ᎾᎿ
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window froze inside the graphics card's driver while OpenGL drew
+#, machine
+menu	OpenGL froze inside the graphics driver here	OpenGL ᎤᏁᎳᎩ ᎤᏪᏅᏒ ᎾᎿ ᏗᏟᎶᏍᏔᏅᎢ ᎢᏗᏢᏅᏗ ᎾᎿ
+#. menu command in the main window
+#. View → Draw with: a greyed note; this computer's OpenGL (its graphics driver) is too old, so MDM doesn't draw with it
+#, machine
+menu	OpenGL here is too old to draw MDM	OpenGL ᎡᏂᎢᏳᏍᏗ MDM ᎥᏝ ᎬᏗᏍᏗ ᏱᎩ
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window stayed empty for 10 seconds, so MDM started again another way
+#, machine
+menu	OpenGL's first frame didn't show within 10 seconds	OpenGL ᎤᎾᎴᏅᎲᎯ ᎥᏝ ᏱᎬᏂᎨᏒ ᏱᏄᎵᏍᏔᏅ 10 ᎢᏯᏗᏔᏍᏗ ᎢᏴᏓ
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: MDM crashed or was closed while starting with it
+#, machine
+menu	OpenGL's last start ended before its first frame	OpenGL ᎤᎾᎴᏅᎲᎯ ᎥᏝ ᏱᎬᏂᎨᏒ ᏱᏄᎵᏍᏔᏅ ᎤᎾᎴᏅᎲᎯ ᎢᏴᏓ
 #. menu command in the main window
 #. what double-clicking a download does — noun: show its properties
 #. noun: opens the download's Properties window
@@ -6851,6 +6927,11 @@ menu	Stop Download	ᎠᏠᏯᏍᏗ ᎤᎵᏍᏛ
 #, machine
 menu	Support &MDM	MDM &ᎠᎵᏍᏕᎸᏙᏗ
 #. menu command in the main window
+#. View menu: submenu choosing how the text is drawn (smooth or classic)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	Te&xt	&ᏗᎪᏪᎵ
+#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Tell a &friend	Ꭿ&ᎵᏥᏙᏅᏗ ᎢᎦᎵᎢ
@@ -6905,6 +6986,10 @@ menu	Vulkan	Vulkan
 #. View → Draw with: a greyed note; Vulkan failed on this computer, so OpenGL draws the windows
 #, machine
 menu	Vulkan didn't start here: OpenGL draws	Vulkan ᎥᏝ ᏳᎴᏅᏔᏃ: OpenGL ᏕᎬᎪᏍᏗ
+#. menu command in the main window
+#. View → Draw with: a greyed note; Vulkan draws the windows through a software renderer instead of a graphics card
+#, machine
+menu	Vulkan draws with a software renderer	Vulkan software renderer ᎬᏗᎭ
 #. menu bar title in the main window (menus, toolbar, Categories pane)
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine

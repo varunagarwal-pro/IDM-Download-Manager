@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 use axum::extract::{Path, RawQuery};
-use axum::http::{StatusCode, header};
+use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 
 use crate::faults::parse_flag;
@@ -57,10 +57,31 @@ fn video_tag(id: &str, src: &str, (w, h): (u32, u32), muted_loop: bool) -> Strin
     )
 }
 
+/// The most links `files=N` gives.
+const MAX_FILES: u32 = 50_000;
+
+/// `files=N`: N links to small generated files, as a big page's "Download all links" gives Link
+/// grabber (#1063): two in five a split archive's volumes (`setK.part1.rar`, `setK.part2.rar`:
+/// a package each), the others zips, videos and documents.
+fn file_links(n: u32) -> String {
+    use std::fmt::Write;
+    let mut out = String::new();
+    for k in 0..n {
+        let name = match k % 5 {
+            0 | 1 => format!("set{}.part{}.rar", k / 5, k % 5 + 1),
+            2 => format!("file{k}.zip"),
+            3 => format!("clip{k}.mp4"),
+            _ => format!("doc{k}.pdf"),
+        };
+        let _ = write!(out, "<p><a href=\"/gen/1K/{name}?seed={k}\">{name}</a></p>");
+    }
+    out
+}
+
 /// `/page?title=TEXT&link=PATH&video=PATH|1&w=&h=&muted_loop=1&iframe=1&shadow=1&several=N&audio=PATH|1&
-/// hls=1&dash=1&drm=1&hls2=1&dash2=1&csp=strict`: a web page with what the browser extension acts on (see
-/// `HELP`).
-pub(crate) async fn page(RawQuery(q): RawQuery) -> Response {
+/// hls=1&dash=1&drm=1&hls2=1&dash2=1&hlsg=SITE&csp=strict&files=N`: a web page with what the browser
+/// extension acts on (see `HELP`).
+pub(crate) async fn page(RawQuery(q): RawQuery, headers: HeaderMap) -> Response {
     let pairs = pairs(q);
     let m: HashMap<&str, &str> = pairs
         .iter()
@@ -71,9 +92,17 @@ pub(crate) async fn page(RawQuery(q): RawQuery) -> Response {
     let size = (num("w", 640), num("h", 360));
     let (muted_loop, iframe, shadow) = (flag("muted_loop"), flag("iframe"), flag("shadow"));
     let several = num("several", 0).min(16);
+    // A big page's links (#1063), for Link grabber.
+    let files = num("files", 0).min(MAX_FILES);
     let csp = m.get("csp") == Some(&"strict");
+    // #900: the stream on another site (`hlsg=SITE`), served only to this page's Origin and
+    // Referer: SITE's address for this host's guarded stream.
+    let guarded = m
+        .get("hlsg")
+        .zip(headers.get(header::HOST).and_then(|v| v.to_str().ok()))
+        .map(|(site, host)| format!("http://{site}/hlsg/{host}/master.m3u8"));
     // A player for each stream asked for, in this order.
-    let streams: Vec<(&str, &str)> = [
+    let mut streams: Vec<(&str, &str)> = [
         ("hls", "/hls/master.m3u8"),
         ("dash", "/dash/manifest.mpd"),
         ("drm", "/dash/protected.mpd"),
@@ -83,6 +112,9 @@ pub(crate) async fn page(RawQuery(q): RawQuery) -> Response {
     .into_iter()
     .filter(|(k, _)| flag(k))
     .collect();
+    if let Some(manifest) = &guarded {
+        streams.push(("hlsg", manifest));
+    }
     // `link` may come again: one link each, in order.
     let links: Vec<&str> = pairs
         .iter()
@@ -104,7 +136,11 @@ pub(crate) async fn page(RawQuery(q): RawQuery) -> Response {
         None if muted_loop
             || iframe
             || shadow
-            || (link.is_none() && audio.is_none() && several == 0 && streams.is_empty()) =>
+            || (link.is_none()
+                && audio.is_none()
+                && several == 0
+                && files == 0
+                && streams.is_empty()) =>
         {
             Some(DEFAULT_VIDEO)
         }
@@ -158,6 +194,7 @@ pub(crate) async fn page(RawQuery(q): RawQuery) -> Response {
     if let Some(src) = audio {
         body += &format!("<audio id=audio src=\"{}\" controls></audio>", esc(src));
     }
+    body += &file_links(files);
     for (k, (kind, manifest)) in streams.iter().enumerate() {
         let id = if k == 0 {
             "player".to_owned()
@@ -171,6 +208,7 @@ pub(crate) async fn page(RawQuery(q): RawQuery) -> Response {
             "dash2" => " data-kind=dash data-decoy=\"/hls2/config?id=lab\"",
             _ => "",
         };
+        let manifest = esc(manifest);
         body += &format!(
             "<video id={id} width={} height={} controls></video>\
              <script src=/assets/stream.js data-manifest=\"{manifest}\" data-player={id}{more}>\
@@ -179,6 +217,14 @@ pub(crate) async fn page(RawQuery(q): RawQuery) -> Response {
         );
     }
     let mut resp = html(body);
+    // `referrer=POLICY` (#607): the page's own referrer policy; `origin` makes its links'
+    // requests carry the site's address only, as a link to another site's file does by default.
+    if let Some(policy) = m
+        .get("referrer")
+        .and_then(|p| header::HeaderValue::from_str(p).ok())
+    {
+        resp.headers_mut().insert(header::REFERRER_POLICY, policy);
+    }
     if csp {
         let media = if !streams.is_empty() {
             "'self' blob:"

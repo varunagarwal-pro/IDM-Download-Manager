@@ -920,7 +920,7 @@
 #, machine
 	Checking {name} ({n} of {total})...	Ag seiceáil {name} ({n} de {total})...
 #. text in the download list (sizes, speeds, status)
-#. a torrent's status while its files are read and checked; {percent} is how much is checked, e.g. "42%"
+#. the list's Status column while a torrent's files or a finished file are checked (against the torrent's hashes or a checksum); {percent} how much is checked, e.g. "42%". One short word: the column is narrow
 #, machine
 	Checking {percent}	Ag seiceáil {percent}
 #. text in the Checksum window; text in the Link grabber window
@@ -1357,6 +1357,10 @@
 #. window title: the download button the extension shows over videos
 #, machine
 	Download panels	Painéil íoslódála
+#. window title in the Options window
+#. window title: Options → Downloads → Edit... (the progress window's settings)
+#, machine
+	Download progress dialog	Dialóg dul chun cinn íoslódála
 #. text in rssdlg.rs
 #. RSS feeds window: the tab of the rules that add articles by themselves
 #, machine
@@ -2289,6 +2293,16 @@
 #. {error} = an error message (keep the braces as they are)
 #, machine
 	its files could not be written: {error}	níorbh fhéidir a chuid comhad a scríobh: {error}
+#. text in the download list (sizes, speeds, status)
+#. why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English
+#. {error} = an error message (keep the braces as they are)
+#, machine
+	its picture and sound couldn't be joined into one file ({error})	níorbh fhéidir a phictiúr agus a fhuaim a cheangal in aon chomhad amháin ({error})
+#. text in the download list (sizes, speeds, status)
+#. why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English; {files} = the downloaded parts' file names, kept in the download folder; "Also delete the file from disk" is the Delete box's choice
+#. {error} = an error message (keep the braces as they are)
+#, machine
+	its picture and sound couldn't be joined into one file ({error}). What was downloaded stays in the folder for Resume to join again ({files}); deleting the download with "Also delete the file from disk" removes it	níorbh fhéidir a phictiúr agus a fhuaim a cheangal in aon chomhad amháin ({error}). Fanann an méid a íoslódáladh san fhillteán le haghaidh Atosaigh chun iad a cheangal arís ({files}); má scriostar an íoslódáil le “Scrios an comhad ón diosca freisin” baintear é
 #. text in errors.rs
 #, machine
 	its release information is not as expected: {detail}	ní mar a bhíothas ag súil leis atá a chuid faisnéise eisiúna: {detail}
@@ -2683,6 +2697,10 @@
 #, machine
 	medium	meánach
 #. text in the download list (sizes, speeds, status)
+#. the list's Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%". One short word: the column is narrow
+#, machine
+	Merging {percent}	Ag cumasc {percent}
+#. text in the download list (sizes, speeds, status)
 #. a video's status while its picture and sound are joined into one file (ffmpeg)
 #. the trailing ... means it is still going on: keep it
 #, machine
@@ -2737,6 +2755,10 @@
 #. crash report window heading: an internal error, MDM still running
 #, machine
 	Mister Download Manager hit an internal error	Bhuail Mister Download Manager earráid inmheánach
+#. text in wake.rs
+#. why the computer isn't going to sleep, in the system's list of programs that keep it awake (Windows' power requests, Linux's inhibitors)
+#, machine
+	Mister Download Manager is downloading	Tá Mister Download Manager ag íoslódáil
 #. text in wake.rs
 #. why the computer isn't going to sleep, in the system's list of programs that keep it awake; {queue} = the queue's name
 #. {queue} = a queue name such as "Main queue" (keep the braces as they are)
@@ -4007,6 +4029,9 @@
 #. checkbox in the Options window; checkbox in a download's progress window
 #, machine
 	Show download complete dialog	Taispeáin dialóg íoslódála críochnaithe
+#. checkbox in the Options window
+#, machine
+	Show download progress dialog when a download starts	Taispeántar dialóg dul chun cinn íoslódála nuair a thosaíonn íoslódáil
 #. button in a dialog box
 #. button: shows these downloads in MDM's list, selected
 #, machine
@@ -4725,6 +4750,38 @@
 #. the Download video window: the site's bot check (Cloudflare) turned yt-dlp away and no browser cookies were used
 #, machine
 	The site's bot check (Cloudflare) refused yt-dlp. If the page opens in your browser, choose that browser in Options → Sites Logins → Cookies for video sites and look the page up again, or use the Download video button over the video.	Dhiúltaigh seiceáil róbait an tsuímh (Cloudflare) do yt-dlp. Má osclaíonn an leathanach i do bhrabhsálaí, roghnaigh an brabhsálaí sin sna Roghanna → Logáil isteach suíomhanna → Fianáin do shuíomhanna físeáin agus breathnaigh ar an leathanach arís, nó bain úsáid as an gcnaipe Íoslódáil físeán os cionn an fhíseáin.
+#. text in errors.rs
+#. why a download failed: the site's security certificate (what proves a secure, HTTPS, site is the one it says) is past its end date. Browsers warn about the same site
+#, machine
+	the site's security certificate has expired, so MDM can't be sure it's the real site (your browser warns about it too)	tá deimhniú slándála an tsuímh imithe in éag, mar sin ní féidir le MDM a bheith cinnte gurb é an fíorsuíomh é (tugann do bhrabhsálaí rabhadh faoi freisin)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was made for other site names than the one in the address
+#, machine
+	the site's security certificate is for another site name, so MDM can't be sure it's the real site (your browser warns about it too)	tá deimhniú slándála an tsuímh do ainmneacha suímh eile, mar sin ní féidir le MDM a bheith cinnte gurb é an fíorsuíomh é (tugann do bhrabhsálaí rabhadh faoi freisin)
+#. text in errors.rs
+#. why a download failed: the site's security certificate was signed by the site itself or by an issuer this computer doesn't trust. Browsers warn about the same site
+#, machine
+	the site's security certificate isn't trusted (it's self-signed or from an unknown issuer), so MDM can't be sure it's the real site (your browser warns about it too)	níl deimhniú slándála an tsuímh iontaofa (tá sé féin-sínithe nó ó eisitheoir anaithnid), mar sin ní féidir le MDM a bheith cinnte gurb é an fíorsuíomh é (tugann do bhrabhsálaí rabhadh faoi freisin)
+#. text in errors.rs
+#. why a download failed: the site's security certificate's validity hasn't begun; usually this computer's date or time is wrong
+#, machine
+	the site's security certificate isn't valid yet: check this computer's date and time	níl deimhniú slándála an tsuímh bailí fós: seiceáil dáta agus am an ríomhaire seo
+#. text in errors.rs
+#. why a download failed: the site's security certificate was refused for another reason (a bad signature, a broken certificate)
+#, machine
+	the site's security certificate was refused, so MDM can't be sure it's the real site	diúltaíodh do dheimhniú slándála an tsuímh, mar sin ní féidir le MDM a bheith cinnte gurb é an fíorsuíomh é
+#. text in errors.rs
+#. why a download failed: the issuer of the site's security certificate took it back
+#, machine
+	the site's security certificate was revoked by its issuer, so MDM won't trust it	chuir a eisitheoir deimhniú slándála an tsuímh ar ceal, mar sin ní bheidh muinín ag MDM as
+#. text in the Download video window
+#. the Download video window: the site's certificate is trusted neither by yt-dlp nor by the computer (asked again with the computer's certificates, #955); usually an antivirus or a proxy that reads secure (HTTPS) connections signs sites with a certificate of its own
+#, machine
+	The site's certificate isn't trusted, by yt-dlp nor by this computer: an antivirus's web filter or a proxy that reads HTTPS may be in the way. Turn its HTTPS scanning off, or add its certificate to the computer's, then look the page up again.	Níl deimhniú an tsuímh iontaofa, ag yt-dlp ná ag an ríomhaire seo: d'fhéadfadh scagaire gréasáin frithvíreas nó seachfhreastalaí a léann HTTPS a bheith sa bhealach. Múch a scanadh HTTPS, nó cuir a dheimhniú le deimhnithe an ríomhaire, ansin déan cuardach ar an leathanach arís.
+#. text in errors.rs
+#. why a download failed: the site's security certificate is made for other uses than a website (its "extended key usage" leaves out web servers)
+#, machine
+	the site's security certificate isn't made for websites, so MDM can't be sure it's the real site	níl deimhniú slándála an tsuímh déanta do shuíomhanna gréasáin, mar sin ní féidir le MDM a bheith cinnte gur é an fíorsuíomh é
 #. text in crashui.rs
 #. crash report window: the symbols couldn't be downloaded; the report still works
 #, machine
@@ -5191,6 +5248,7 @@
 #, machine
 	United States Minor Outlying Islands	Mion-Oileáin Imeallacha na Stát Aontaithe
 #. text in a download's Properties window
+#. the web page is not known
 #, machine
 	Unknown	Anaithnid
 #. text in a dialog box; text in a download's progress window; text in whereis.rs
@@ -5437,6 +5495,9 @@
 #. remote control page (on a phone): label of the choice: start the new download now, or let it wait in a queue
 #, machine
 	When	Cathain
+#. text in the Options window
+#, machine
+	When it is off, downloads go on in the main window's list. Double-click one there to see its progress.	Nuair a bhíonn sé múchta, leanann íoslódálacha ar aghaidh i liosta na príomhfhuinneoige. Cliceáil faoi dhó ar cheann ansin chun a dhul chun cinn a fheiceáil.
 #. text in the Batch download window
 #, machine
 	Wildcard size	Méid an chárta fiáin
@@ -5828,14 +5889,6 @@
 #. a torrent's status while the user's debrid service downloads it, before MDM gets its files; {service} the service ("Real-Debrid"), {percent} how far it is ("45%")
 #, machine
 	{percent} at {service}	{percent} ag {service}
-#. text in the download list (sizes, speeds, status)
-#. the list's narrow Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%": keep it first, the column is narrow
-#, machine
-	{percent} merged	{percent} cumaiscthe
-#. text in the download list (sizes, speeds, status)
-#. the list's narrow Status column while the finished file is checked against its checksum; {percent} how much is checked, e.g. "45%": keep it first, the column is narrow
-#, machine
-	{percent} verified	{percent} fíoraithe
 #. text in errors.rs
 #, machine
 	{problem} ({cause})	{problem} ({cause})
@@ -6370,6 +6423,10 @@ extension	This page's player streams its video in pieces, so there's no file to 
 #, machine
 extension	Turn on	Cas air
 #. text in the browser extension
+#. link beside "Downloads from <site> stay with the browser" in the toolbar button's popup: take the site off the excluded sites again
+#, machine
+extension	Undo	Cealaigh
+#. text in the browser extension
 #. status when the app is older than the extension; keep the name Mister Download Manager as it is
 #, machine
 extension	Update Mister Download Manager to use everything this extension offers	Nuashonraigh Mister Download Manager chun gach rud a thairgeann an síneadh seo a úsáid
@@ -6502,10 +6559,10 @@ menu	&About Mister Download Manager	&Maidir le Mister Download Manager
 #, machine
 menu	&Add new download	Íoslódáil nua &a chur leis
 #. menu command in the main window
+#. View → Window system: MDM chooses the window system itself at each start
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#. the trailing ... means it opens a window: keep it
 #, machine
-menu	&Add new download...	Íoslódáil nua &a chur leis...
+menu	&Automatic	&Uathoibríoch
 #. menu command in the main window
 #. View → Text: letters drawn the classic way, hinted to whole pixels (crisp, coarse on a dense screen)
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
@@ -6611,11 +6668,6 @@ menu	&Stop All	&Stop gach ceann
 #, machine
 menu	&Stop Download	&Stop an íoslódáil
 #. menu command in the main window
-#. View menu: submenu choosing how the text is drawn (smooth or classic)
-#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
-#, machine
-menu	&Text	&Téacs
-#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	&Tray icon	Deilbhín &tráidire
@@ -6632,6 +6684,21 @@ menu	&Undo	&Cealaigh
 #, machine
 menu	&Video downloads	Íoslódálacha &físeáin
 #. menu command in the main window
+#. View → Window system: Wayland's own windows (the name of a Linux display system, usually kept as is)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&Wayland	&Wayland
+#. menu command in the main window
+#. View menu: submenu choosing the window system MDM's windows use on Linux (X11 through XWayland, or Wayland)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&Window system	Córas &fuinneog
+#. menu command in the main window
+#. View → Window system: X11's windows, through XWayland in a Wayland session (names of Linux display systems, usually kept as is)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	&X11 (XWayland)	&X11 (XWayland)
+#. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Add &batch download	Cuir íoslódáil &bhaisce leis
@@ -6640,6 +6707,11 @@ menu	Add &batch download	Cuir íoslódáil &bhaisce leis
 #. the trailing ... means it opens a window: keep it
 #, machine
 menu	Add &magnet link...	Cuir nasc &maighnéadach leis...
+#. menu command in the main window
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#. the trailing ... means it opens a window: keep it
+#, machine
+menu	Add &new download...	Íoslódáil nua &a chur leis...
 #. menu command in the main window
 #. View → Theme: picks a theme file or a Base16 or pywal colour scheme, copies it into the themes folder and uses it
 #, machine
@@ -6725,7 +6797,7 @@ menu	By Save &Path	De réir &Cosáin Sábhála
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
-menu	By St&atus	De réir St&ádais
+menu	By Stat&us	De réir St&ádais
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
@@ -6773,6 +6845,10 @@ menu	Delete from queue	Scrios ón scuaine
 #. View → Draw with: a graphics system's name (Microsoft's), usually kept as is
 #, machine
 menu	Direct3D	Direct3D
+#. menu command in the main window
+#. View → Draw with: a greyed note; what draws the windows and why: Direct3D 12 through Windows' own software renderer (WARP, keep the name), because this computer's graphics card has no Direct3D 12 driver
+#, machine
+menu	Direct3D 12 (WARP): this graphics card has no Direct3D 12 driver	Direct3D 12 (WARP): níl tiománaí Direct3D 12 ag an gcárta grafaicí seo
 #. menu command in the main window
 #. View → Draw with: a greyed note; Direct3D failed on this computer, so OpenGL draws the windows
 #, machine
@@ -6851,6 +6927,14 @@ menu	Hide drop target	Folaigh an sprioc scaoilte
 #, machine
 menu	High contrast	Ardchodarsnacht
 #. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are Wayland's now
+#, machine
+menu	In use: Wayland	In úsáid: Wayland
+#. menu command in the main window
+#. View → Window system: a greyed note; MDM's windows are X11's (through XWayland) now
+#, machine
+menu	In use: X11 (XWayland)	In úsáid: X11 (XWayland)
+#. menu command in the main window
 #. View → Draw with: a greyed note under "… didn't start here"; why: another error, written in MDM's log
 #, machine
 menu	It couldn't start: the log says why	Níorbh fhéidir é a thosú: deir an logáil cén fáth
@@ -6926,9 +7010,25 @@ menu	Open with...	Oscail le...
 #, machine
 menu	OpenGL	OpenGL
 #. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: it couldn't start on this computer
+#, machine
+menu	OpenGL didn't start here	Níor thosaigh OpenGL anseo
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window froze inside the graphics card's driver while OpenGL drew
+#, machine
+menu	OpenGL froze inside the graphics driver here	Reoigh OpenGL laistigh den tiománaí grafaicí anseo
+#. menu command in the main window
 #. View → Draw with: a greyed note; this computer's OpenGL (its graphics driver) is too old, so MDM doesn't draw with it
 #, machine
 menu	OpenGL here is too old to draw MDM	Tá OpenGL ar an ríomhaire seo ró-shean chun MDM a tharraingt
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: its window stayed empty for 10 seconds, so MDM started again another way
+#, machine
+menu	OpenGL's first frame didn't show within 10 seconds	Níor thaispeáin an chéad fhráma de OpenGL laistigh de 10 soicind
+#. menu command in the main window
+#. View → Draw with: a greyed note; why MDM no longer draws with OpenGL: MDM crashed or was closed while starting with it
+#, machine
+menu	OpenGL's last start ended before its first frame	Tháinig deireadh le tosú deireanach OpenGL roimh a chéad fhráma
 #. menu command in the main window
 #. what double-clicking a download does — noun: show its properties
 #. noun: opens the download's Properties window
@@ -7025,6 +7125,11 @@ menu	Stop Download	Cuir an íoslódáil ar stad
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine
 menu	Support &MDM	Tacaigh le &MDM
+#. menu command in the main window
+#. View menu: submenu choosing how the text is drawn (smooth or classic)
+#. & marks the keyboard shortcut letter: keep one & before a letter of the translation
+#, machine
+menu	Te&xt	&Téacs
 #. menu command in the main window
 #. & marks the keyboard shortcut letter: keep one & before a letter of the translation
 #, machine

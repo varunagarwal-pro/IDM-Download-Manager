@@ -40,7 +40,14 @@ pub struct CustomCategory {
 static CUSTOM: std::sync::RwLock<Vec<CustomCategory>> = std::sync::RwLock::new(Vec::new());
 
 pub fn set_custom(list: &[CustomCategory]) {
-    *CUSTOM.write().unwrap() = list.to_vec();
+    // The rules' lock first, as `rules` takes it: nobody matches a name against half a change.
+    let mut rules = RULES.write().unwrap();
+    let mut custom = CUSTOM.write().unwrap();
+    if *custom != list {
+        *custom = list.to_vec();
+        *rules = None;
+        CHANGES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
 }
 
 pub fn custom(id: u32) -> Option<CustomCategory> {
@@ -69,7 +76,51 @@ pub struct BuiltinEdit {
 static BUILTIN: std::sync::RwLock<Vec<BuiltinEdit>> = std::sync::RwLock::new(Vec::new());
 
 pub fn set_builtin(list: &[BuiltinEdit]) {
-    *BUILTIN.write().unwrap() = list.to_vec();
+    let mut rules = RULES.write().unwrap();
+    let mut builtin = BUILTIN.write().unwrap();
+    if *builtin != list {
+        *builtin = list.to_vec();
+        *rules = None;
+        CHANGES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+/// The file types each category takes, in the order [`Category::of`] tries them: the user's
+/// categories, then the built-in ones not deleted. Worked out from `CUSTOM` and `BUILTIN` once,
+/// and again after they change (`None` until then): `of` runs for each link of a list of
+/// thousands, and listing every category's types again for each name held the window (#1063).
+type Rules = Vec<(Category, Vec<String>)>;
+static RULES: std::sync::RwLock<Option<Rules>> = std::sync::RwLock::new(None);
+
+/// How many times the categories changed (`set_custom`, `set_builtin`): what was worked out
+/// from them (a link's category) is worked out again when this moves.
+static CHANGES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// See [`CHANGES`].
+pub fn categories_changed() -> u64 {
+    CHANGES.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// `f` with the rules, worked out first if the categories changed since.
+fn rules<R>(f: impl FnOnce(&Rules) -> R) -> R {
+    if let Some(rules) = RULES.read().unwrap().as_ref() {
+        return f(rules);
+    }
+    let mut rules = RULES.write().unwrap();
+    f(rules.get_or_insert_with(|| {
+        let custom: Vec<Category> = CUSTOM
+            .read()
+            .unwrap()
+            .iter()
+            .map(|c| Category::Custom(c.id))
+            .collect();
+        // A deleted built-in takes no file: its types go to another category, or to General.
+        custom
+            .into_iter()
+            .chain(Category::BUILT_IN.into_iter().filter(|c| !c.deleted()))
+            .map(|c| (c, c.extensions()))
+            .collect()
+    }))
 }
 
 fn builtin(cat: Category) -> Option<BuiltinEdit> {
@@ -91,12 +142,13 @@ fn parse_types(types: &str) -> Vec<String> {
         .collect()
 }
 
-/// Does `ext` (lower case) match a file-type pattern (`mp4`, `r0*`)?
+/// Does `ext` match a file-type pattern (`mp4`, `r0*`), in any case?
 fn type_matches(pattern: &str, ext: &str) -> bool {
-    let pattern = pattern.to_ascii_lowercase();
     match pattern.strip_suffix('*') {
-        Some(prefix) => ext.starts_with(prefix),
-        None => ext == pattern,
+        Some(prefix) => ext
+            .get(..prefix.len())
+            .is_some_and(|start| start.eq_ignore_ascii_case(prefix)),
+        None => ext.eq_ignore_ascii_case(pattern),
     }
 }
 
@@ -257,18 +309,41 @@ impl Category {
 
     /// The category a file name falls into: the user's categories first (that is why they made
     /// one), then IDM's; Torrents only by source, never by name.
+    /// Nothing is listed or copied for a name: the categories' types are worked out once
+    /// ([`RULES`], #1063).
     pub fn of(file_name: &str) -> Category {
         let Some((_, ext)) = file_name.rsplit_once('.') else {
             return Category::General;
         };
+        rules(|rules| {
+            rules
+                .iter()
+                .find(|(_, types)| types.iter().any(|p| type_matches(p, ext)))
+                .map_or(Category::General, |(c, _)| *c)
+        })
+    }
+
+    /// [`Self::of`] as it was before #1063 (every category's types listed again for each
+    /// name), for the tests that show both give the same answers.
+    #[cfg(test)]
+    pub fn of_as_before(file_name: &str) -> Category {
+        let Some((_, ext)) = file_name.rsplit_once('.') else {
+            return Category::General;
+        };
         let ext = ext.to_ascii_lowercase();
+        let type_matches = |pattern: &str, ext: &str| {
+            let pattern = pattern.to_ascii_lowercase();
+            match pattern.strip_suffix('*') {
+                Some(prefix) => ext.starts_with(prefix),
+                None => ext == pattern,
+            }
+        };
         let custom: Vec<Category> = CUSTOM
             .read()
             .unwrap()
             .iter()
             .map(|c| Category::Custom(c.id))
             .collect();
-        // A deleted built-in takes no file: its types go to another category, or to General.
         custom
             .into_iter()
             .chain(Category::BUILT_IN.into_iter().filter(|c| !c.deleted()))
@@ -455,6 +530,10 @@ pub struct Item {
     /// own copy is `context.referer`; this one follows it (`set_referer`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub referer: Option<String>,
+    /// The web page it was started from in the browser, whole (#607), where its Referer is
+    /// often the site's address only. Refresh download address opens it; kept with the list.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub page: Option<String>,
     /// A video's (its `url` is the page): the address its file came from, the first stream of
     /// its last run as yt-dlp gave it to MDM's engine (#795). The windows' "Address".
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -543,6 +622,9 @@ pub struct RemoteSpec {
     pub transfer: Option<String>,
     /// The folder its files go into (a torrent of several files gets its own folder there).
     pub folder: PathBuf,
+    /// Custom file or folder name chosen in Add torrent (#517), when renamed from the torrent's own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub renamed: Option<String>,
 }
 
 /// A gallery download's choice (#58).
@@ -551,6 +633,33 @@ pub struct GallerySpec {
     /// At most this many files (the first the site lists, on most the newest); none: all.
     #[serde(default)]
     pub limit: Option<u64>,
+}
+
+/// Why a video failed when joining its picture and sound did (ffmpeg's `error`, in English),
+/// and what became of what was downloaded: `kept` beside its file, for Resume to join again
+/// without downloading it, until the download is deleted with its files.
+fn merge_failure(error: &str, kept: &[PathBuf]) -> String {
+    let error = crate::i18n::ltr(error);
+    if kept.is_empty() {
+        return crate::i18n::fmt(
+            // i18n: why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English
+            crate::i18n::t("its picture and sound couldn't be joined into one file ({error})"),
+            &[("error", &error)],
+        );
+    }
+    let files = kept
+        .iter()
+        .filter_map(|f| f.file_name())
+        .map(|n| crate::i18n::isolate(&n.to_string_lossy()))
+        .collect::<Vec<_>>()
+        .join(", ");
+    crate::i18n::fmt(
+        // i18n: why a video download failed: ffmpeg couldn't join its picture and sound into one file; {error} = ffmpeg's reason, in English; {files} = the downloaded parts' file names, kept in the download folder; "Also delete the file from disk" is the Delete box's choice
+        crate::i18n::t(
+            "its picture and sound couldn't be joined into one file ({error}). What was downloaded stays in the folder for Resume to join again ({files}); deleting the download with \"Also delete the file from disk\" removes it",
+        ),
+        &[("error", &error), ("files", &files)],
+    )
 }
 
 /// A helper's progress (yt-dlp's, gallery-dl's) as the engine's view: one segment when its size
@@ -565,7 +674,14 @@ fn tool_snapshot(p: mdm_tools::video::Progress, url: &Url) -> mdm_engine::Snapsh
         V::Running if p.merging.is_some() => (State::Merging, None, None),
         V::Running => (State::Downloading, None, None),
         V::Done(f) => (State::Done, Some(f), None),
-        V::Failed(e) => (State::Failed, None, Some(e)),
+        V::Failed(e) => (
+            State::Failed,
+            None,
+            Some(match &p.merge_failed {
+                Some(kept) => merge_failure(&e, kept),
+                None => e,
+            }),
+        ),
         V::Stopped => (State::Cancelled, None, None),
     };
     let size = p.total;
@@ -719,6 +835,11 @@ pub struct VideoSpec {
     /// The subtitles saved with it (#68; none in a list saved before them).
     #[serde(default)]
     pub subs: mdm_tools::video::Subs,
+    /// What its last run kept beside its file when joining its streams failed, for Resume
+    /// (`mdm_tools::video::Progress::merge_failed`): deleting it with its files removes them,
+    /// whatever yt-dlp named them (`Talk.faud-English.mp4`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub parts: Vec<PathBuf>,
 }
 
 /// A running download and its speed measurement.
@@ -849,6 +970,7 @@ impl Item {
             preexisting_folder: false,
             moved_away: false,
             referer: None,
+            page: None,
             file_url: None,
             live: None,
             torrent_check: None,
@@ -922,7 +1044,12 @@ impl Item {
             }
         }
         let dt = live.sample.0.elapsed().as_secs_f64();
-        if dt >= 0.5 {
+        if self.torrent.is_none() && every_byte_in(&s) {
+            // Every byte in (#736): nothing comes in while the last of it is written out, the
+            // file checked, joined or named; the rate the download ended on isn't one any more.
+            live.rate = 0.0;
+            live.sample = (Instant::now(), s.downloaded);
+        } else if dt >= 0.5 {
             let inst = s.downloaded.saturating_sub(live.sample.1) as f64 / dt;
             live.rate = if live.rate == 0.0 {
                 inst
@@ -955,6 +1082,15 @@ impl Item {
                 self.status = status;
                 // In the interface language; the engine's English when it gave no failure.
                 self.error = s.failure.as_ref().map(crate::errors::describe).or(s.error);
+                // A video's streams kept after its merge failed: its own, for Delete.
+                if let Some(Live {
+                    dl: Job::Video { job, .. },
+                    ..
+                }) = &self.live
+                    && let Some(v) = self.video.as_mut()
+                {
+                    v.parts = job.progress().merge_failed.unwrap_or_default();
+                }
                 if status == Status::Complete {
                     self.downloaded = self.size.unwrap_or(self.downloaded);
                 }
@@ -1051,6 +1187,13 @@ impl Item {
             })
     }
 
+    /// Its last run failed joining a video's streams and kept them for Resume
+    /// ([`VideoSpec::parts`]): the progress window explains it in full under "Error", as a
+    /// site's page (#701).
+    pub fn merge_failed(&self) -> bool {
+        self.status == Status::Error && self.video.as_ref().is_some_and(|v| !v.parts.is_empty())
+    }
+
     /// Where its file comes from, the windows' "Address" (#795): a running video's stream under
     /// way (its page until the engine has one), a stopped or finished one's first stream of its
     /// last run; a file's (and a video's never downloaded) own address.
@@ -1065,14 +1208,16 @@ impl Item {
     }
 
     /// The web page it was obtained from (#795): a video's or a gallery's is its own address
-    /// (the page yt-dlp, gallery-dl look up), a file's the page the browser sent as its referer.
+    /// (the page yt-dlp, gallery-dl look up); a file's the page the browser started it from
+    /// (#607), else the one it sent as its referer (an older extension's, Import's, File
+    /// Properties'). Refresh download address opens it.
     pub fn web_page(&self) -> Option<&str> {
         if self.video.is_some() || self.gallery.is_some() {
             return Some(self.url.as_str());
         }
-        self.context
-            .referer
+        self.page
             .as_deref()
+            .or(self.context.referer.as_deref())
             .or(self.referer.as_deref())
             .filter(|r| !r.is_empty())
     }
@@ -1168,49 +1313,58 @@ impl Item {
         } else {
             0.0
         };
-        Some(crate::i18n::fmt(
-            // i18n: a torrent's status while its files are read and checked; {percent} is how much is checked, e.g. "42%"
-            crate::i18n::t("Checking {percent}"),
-            &[("percent", &crate::i18n::percent(ratio.min(1.0), 0))],
-        ))
+        Some(checking(&crate::i18n::percent(ratio.min(1.0), 0)))
     }
 
     /// After the last byte, while the file is checked against its checksum or a video's
     /// streams are joined (#736): "Verifying... (45%)", "Merging...", with how far it is when
-    /// that's known. `short`: the list's narrow Status column, "45% verified", the percentage
-    /// first (as "45% at Real-Debrid"); the progress window says it whole.
+    /// that's known. `short`: the list's Status column, one short word and how far, "Checking
+    /// 45%" (as a torrent's check) and "Merging 45%" ("Merging ..." before that is known); the
+    /// column is wide enough for them in the interface language and font ([`crate::list::status_width`]). The
+    /// cell's tip and a screen reader say it whole ([`crate::list::Row::status_whole`]).
     pub fn finishing(&self, short: bool) -> Option<String> {
         let s = self.snap.as_ref()?;
-        let (plain, with_percent) = match s.state {
-            // i18n: a download's status while the finished file is checked against its checksum
-            State::Verifying => (crate::i18n::t("Verifying..."), {
-                if short {
-                    // i18n: the list's narrow Status column while the finished file is checked against its checksum; {percent} how much is checked, e.g. "45%": keep it first, the column is narrow
-                    crate::i18n::t("{percent} verified")
+        if !matches!(s.state, State::Verifying | State::Merging) {
+            return None;
+        }
+        let percent = s
+            .finishing
+            .map(|f| crate::i18n::percent(f.clamp(0.0, 1.0), 0));
+        let verifying = s.state == State::Verifying;
+        Some(match (short, percent) {
+            // As "... at Real-Debrid" before its service says how far.
+            (true, percent) => {
+                let percent = percent.as_deref().unwrap_or("...");
+                if verifying {
+                    checking(percent)
                 } else {
+                    merging(percent)
+                }
+            }
+            (false, Some(percent)) => crate::i18n::fmt(
+                if verifying {
                     // i18n: a download's status while the finished file is checked against its checksum; {percent} how much is checked, e.g. "45%"
                     crate::i18n::t("Verifying... ({percent})")
-                }
-            }),
-            // i18n: a video's status while its picture and sound are joined into one file (ffmpeg)
-            State::Merging => (crate::i18n::t("Merging..."), {
-                if short {
-                    // i18n: the list's narrow Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%": keep it first, the column is narrow
-                    crate::i18n::t("{percent} merged")
                 } else {
                     // i18n: a video's status while its picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%"
                     crate::i18n::t("Merging... ({percent})")
-                }
-            }),
-            _ => return None,
-        };
-        Some(match s.finishing {
-            Some(f) => crate::i18n::fmt(
-                with_percent,
-                &[("percent", &crate::i18n::percent(f.clamp(0.0, 1.0), 0))],
+                },
+                &[("percent", &percent)],
             ),
-            None => plain.to_owned(),
+            (false, None) if verifying => {
+                // i18n: a download's status while the finished file is checked against its checksum
+                crate::i18n::t("Verifying...").to_owned()
+            }
+            (false, None) => {
+                // i18n: a video's status while its picture and sound are joined into one file (ffmpeg)
+                crate::i18n::t("Merging...").to_owned()
+            }
         })
+    }
+
+    /// Every byte is in (#736): no rate and no time left, as once it is complete.
+    pub fn past_last_byte(&self) -> bool {
+        self.torrent.is_none() && self.snap.as_ref().is_some_and(every_byte_in)
     }
 
     pub fn status_text(&self) -> String {
@@ -1246,12 +1400,48 @@ impl Item {
 
     pub fn time_left(&self) -> String {
         match (self.status, self.size) {
-            (Status::Downloading, Some(t)) if self.rate() > 1.0 => {
+            (Status::Downloading, Some(t)) if self.rate() > 1.0 && !self.past_last_byte() => {
                 time((t.saturating_sub(self.downloaded)) as f64 / self.rate())
             }
             _ => String::new(),
         }
     }
+}
+
+/// Every byte of a download is in (#736): the last of it is written out (its whole size
+/// received and no connection receiving or connecting, as the progress window's "Finishing..."),
+/// the file checked, a video's streams joined, or the file named. Nothing comes in any more.
+fn every_byte_in(s: &mdm_engine::Snapshot) -> bool {
+    use mdm_engine::download::ConnStatus;
+    matches!(
+        s.state,
+        State::Verifying | State::Merging | State::Completing
+    ) || (s.state == State::Downloading
+        && s.size.is_some_and(|t| t > 0 && s.downloaded >= t)
+        && !s
+            .connections
+            .iter()
+            .any(|c| matches!(c.status, ConnStatus::Receiving | ConnStatus::Connecting)))
+}
+
+/// The list's Status column while a torrent's files or a finished file are checked (against
+/// the torrent's hashes, against a checksum): one short word and how far (#736).
+pub fn checking(percent: &str) -> String {
+    crate::i18n::fmt(
+        // i18n: the list's Status column while a torrent's files or a finished file are checked (against the torrent's hashes or a checksum); {percent} how much is checked, e.g. "42%". One short word: the column is narrow
+        crate::i18n::t("Checking {percent}"),
+        &[("percent", percent)],
+    )
+}
+
+/// The list's Status column while a video's picture and sound are joined: one short word and
+/// how far (#736).
+pub fn merging(percent: &str) -> String {
+    crate::i18n::fmt(
+        // i18n: the list's Status column while a video's picture and sound are joined into one file (ffmpeg); {percent} how far, e.g. "45%". One short word: the column is narrow
+        crate::i18n::t("Merging {percent}"),
+        &[("percent", percent)],
+    )
 }
 
 /// The "Last Try Date" and "Added" columns as stored, e.g. `Oct 28 21:44:12 2026` (the list's
@@ -1434,6 +1624,7 @@ mod file_address_tests {
         i.video = Some(VideoSpec {
             selector: "best".into(),
             subs: Default::default(),
+            parts: Vec::new(),
         });
         i
     }
@@ -1453,6 +1644,7 @@ mod file_address_tests {
             engine: None,
             helper: None,
             merging: None,
+            merge_failed: None,
         };
         // Looking the page up: no stream yet.
         assert_eq!(tool_snapshot(p.clone(), &page).url, page);
@@ -1487,6 +1679,11 @@ mod file_address_tests {
             f.context.referer.as_deref(),
             Some("https://www.example.com/get")
         );
+        // The page the browser started it from, whole, before its Referer (#607): a referrer
+        // policy often cuts that to the site's address.
+        f.set_referer(Some("https://www.example.com/".into()));
+        f.page = Some("https://www.example.com/files/a.html".into());
+        assert_eq!(f.web_page(), Some("https://www.example.com/files/a.html"));
     }
 
     /// The referer and a video's file address are kept with the list (#795); the browser's
@@ -1508,6 +1705,25 @@ mod file_address_tests {
             .replace(&format!(",\"file_url\":\"{STREAM}\""), "");
         let back: Item = serde_json::from_str(&old).unwrap();
         assert_eq!((back.referer, back.file_url), (None, None));
+    }
+
+    /// The page a download was started from is kept with the list (#607), and none is written
+    /// for a download without one.
+    #[test]
+    fn the_page_it_was_started_from_is_saved() {
+        let mut f = Item::new(
+            3,
+            "https://cdn.example.net/a.zip".parse().unwrap(),
+            PathBuf::from("a.zip"),
+            Category::Compressed,
+        );
+        assert!(!serde_json::to_string(&f).unwrap().contains("\"page\""));
+        f.page = Some("https://www.example.com/files/a.html".into());
+        let back: Item = serde_json::from_str(&serde_json::to_string(&f).unwrap()).unwrap();
+        assert_eq!(
+            back.web_page(),
+            Some("https://www.example.com/files/a.html")
+        );
     }
 }
 
@@ -1543,8 +1759,41 @@ mod tests {
         it.video = Some(VideoSpec {
             selector: "18".into(),
             subs: Default::default(),
+            parts: Vec::new(),
         });
         it
+    }
+
+    /// Joining a video's streams failed: why, and that what was downloaded stays for Resume,
+    /// by name; without anything kept, only why.
+    #[test]
+    fn a_failed_merge_says_what_stays() {
+        let url = Url::parse("https://example.org/a.mp4").unwrap();
+        let mut p = mdm_tools::video::Progress {
+            state: mdm_tools::video::State::Failed("Postprocessing: Conversion failed!".into()),
+            merge_failed: Some(vec![
+                PathBuf::from("/v/Talk.f640.mp4"),
+                PathBuf::from("/v/Talk.faud-English.mp4"),
+            ]),
+            ..Default::default()
+        };
+        let e = super::tool_snapshot(p.clone(), &url).error.unwrap();
+        assert!(e.contains("Conversion failed!"), "{e}");
+        assert!(e.contains("Resume"), "{e}");
+        assert!(
+            e.contains("Talk.f640.mp4") && e.contains("Talk.faud-English.mp4"),
+            "{e}"
+        );
+        p.merge_failed = Some(Vec::new());
+        let e = super::tool_snapshot(p.clone(), &url).error.unwrap();
+        assert!(
+            e.contains("Conversion failed!") && !e.contains("Resume"),
+            "{e}"
+        );
+        // Any other failure: yt-dlp's words as they are.
+        p.merge_failed = None;
+        let e = super::tool_snapshot(p, &url).error.unwrap();
+        assert_eq!(e, "Postprocessing: Conversion failed!");
     }
 
     /// #736: after the last byte the Status column says what is happening and how far.
@@ -1560,17 +1809,36 @@ mod tests {
             ..Default::default()
         };
         it.snap = Some(super::tool_snapshot(p.clone(), &url));
-        assert_eq!(it.status_text(), "45% merged");
+        // A short word and how far in the list; the progress window says it whole.
+        assert_eq!(it.status_text(), "Merging 45%");
         assert_eq!(it.finishing(false).as_deref(), Some("Merging... (45%)"));
+        assert!(it.past_last_byte());
         p.merging = Some(None);
         it.snap = Some(super::tool_snapshot(p.clone(), &url));
-        assert_eq!(it.status_text(), "Merging...");
-        let mut s = super::tool_snapshot(p, &url);
+        assert_eq!(it.status_text(), "Merging ...");
+        assert_eq!(it.finishing(false).as_deref(), Some("Merging..."));
+        let mut s = super::tool_snapshot(p.clone(), &url);
         s.state = State::Verifying;
         s.finishing = Some(0.5);
         it.snap = Some(s);
-        assert_eq!(it.status_text(), "50% verified");
+        assert_eq!(it.status_text(), "Checking 50%");
         assert_eq!(it.finishing(false).as_deref(), Some("Verifying... (50%)"));
+        assert!(it.past_last_byte());
+        // Still coming in (yt-dlp's own connection receiving): a rate and a time left as before.
+        p.merging = None;
+        p.speed = 1000.0;
+        it.snap = Some(super::tool_snapshot(p.clone(), &url));
+        assert!(!it.past_last_byte());
+        assert_eq!(it.finishing(true), None);
+        // Every byte in, the engine's connections done, before the merge: nothing comes in.
+        p.speed = 0.0;
+        p.engine = Some(Default::default());
+        it.snap = Some(super::tool_snapshot(p.clone(), &url));
+        assert!(it.past_last_byte());
+        // Short of the whole size: still coming.
+        p.downloaded = 99 * m;
+        it.snap = Some(super::tool_snapshot(p, &url));
+        assert!(!it.past_last_byte());
     }
 
     /// Without a size there's no share to show: no 0 % (from #384).
@@ -1739,6 +2007,7 @@ mod helper_connection_tests {
             engine: None,
             helper: None,
             merging: None,
+            merge_failed: None,
         }
     }
 
