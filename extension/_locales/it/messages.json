@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "originale"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Nascondi il pulsante di download a schermo intero"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Quando la pagina è a schermo intero, i suoi video non mostrano il pulsante Scarica video"
   }
 }

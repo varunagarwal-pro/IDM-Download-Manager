@@ -6177,6 +6177,10 @@ extension	Help	Ajutor
 #, machine
 extension	Hide on this video	Ascundeți pe acest videoclip
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Ascundeți butonul de descărcare în modul ecran complet
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Țineți apăsat Alt în timp ce faceți clic pe un link pentru a lăsa browserul să-l descarce.
@@ -6445,6 +6449,10 @@ extension	Video	Video
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Așteptați un moment, apoi încercați din nou.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	În timp ce pagina este în modul ecran complet, videoclipurile sale nu afișează butonul Descărcați videoclipul
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

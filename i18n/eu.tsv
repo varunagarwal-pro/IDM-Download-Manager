@@ -6178,6 +6178,10 @@ extension	Help	Laguntza
 #, machine
 extension	Hide on this video	Ezkutatu bideo honetan
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Ezkutatu deskarga-botoia pantaila osoan
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Eduki sakatuta Alt esteka batean klik egitean, arakatzaileak deskarga dezan.
@@ -6446,6 +6450,10 @@ extension	Video	Bideoa
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Itxaron une bat, eta saiatu berriro.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Orria pantaila osoan dagoen bitartean, bere bideoek ez dute deskarga-botoia erakusten
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

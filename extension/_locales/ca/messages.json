@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "original"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Amaga el botó de baixada en pantalla completa"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Mentre la pàgina estigui en pantalla completa, els seus vídeos no mostraran el botó Baixa el vídeo"
   }
 }

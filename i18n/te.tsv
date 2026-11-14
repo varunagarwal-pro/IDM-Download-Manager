@@ -6178,6 +6178,10 @@ extension	Help	సహాయం
 #, machine
 extension	Hide on this video	ఈ వీడియోలో దాచు
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	పూర్తి స్క్రీన్‌లో డౌన్‌లోడ్ బటన్‌ను దాచండి
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	బ్రౌజర్ ద్వారా డౌన్‌లోడ్ చేయడానికి లింక్‌ను క్లిక్ చేస్తున్నప్పుడు Alt కీని నొక్కి ఉంచండి.
@@ -6446,6 +6450,10 @@ extension	Video	వీడియో
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	ఒక క్షణం వేచి ఉండి, ఆపై మళ్లీ ప్రయత్నించండి.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	పేజీ పూర్తి స్క్రీన్‌లో ఉన్నప్పుడు, దాని వీడియోలపై డౌన్‌లోడ్ వీడియో బటన్ కనిపించదు
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

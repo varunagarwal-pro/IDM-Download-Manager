@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "원본"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "전체 화면에서 다운로드 버튼 숨기기"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "페이지가 전체 화면일 때 동영상에 다운로드 버튼이 표시되지 않습니다."
   }
 }

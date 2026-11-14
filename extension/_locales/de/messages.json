@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "Original"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Download-Schaltfläche im Vollbildmodus ausblenden"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Wenn die Seite im Vollbildmodus ist, wird für Videos keine Download-Schaltfläche angezeigt."
   }
 }

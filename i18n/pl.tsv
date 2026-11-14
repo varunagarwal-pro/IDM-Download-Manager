@@ -6159,6 +6159,10 @@ extension	Help	Pomoc
 #, machine
 extension	Hide on this video	Ukryj na tym wideo
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Ukryj przycisk pobierania w trybie pełnoekranowym
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Przytrzymaj klawisz Alt, klikając łącze, aby przeglądarka je pobrała.
@@ -6427,6 +6431,10 @@ extension	Video	Wideo
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Poczekaj chwilę, a następnie spróbuj ponownie.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Gdy strona jest w trybie pełnoekranowym, na jej filmach nie wyświetla się przycisk Pobierz wideo
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

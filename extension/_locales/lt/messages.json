@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "originalas"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Slėpti atsisiuntimo mygtuką viso ekrano režimu"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Kai puslapis yra viso ekrano režimu, jo vaizdo įrašuose nerodomas mygtukas „Atsisiųsti vaizdo įrašą“"
   }
 }

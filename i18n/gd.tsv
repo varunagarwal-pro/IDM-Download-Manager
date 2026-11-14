@@ -6178,6 +6178,10 @@ extension	Help	Cobhair
 #, machine
 extension	Hide on this video	Falaich air a’ bhidio seo
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Falaich am putan luchdaich a-nuas ann am modh làn-sgrìn
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Cùm Alt sìos fhad ’s a bhriogas tu air ceangal gus am faigh am brabhsair a luchdadh a-nuas.
@@ -6446,6 +6450,10 @@ extension	Video	Video
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Fuirich mionaid, an uair sin feuch ris a-rithist.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Fhad ‘s a tha an duilleag ann am modh làn-sgrìn, cha seall na bhideothan aice putan Luchdaich a-nuas bhidio
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

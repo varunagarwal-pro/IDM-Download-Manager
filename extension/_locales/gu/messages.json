@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "મૂળ"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "પૂર્ણ સ્ક્રીનમાં ડાઉનલોડ બટન છુપાવો"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "જ્યારે પૃષ્ઠ પૂર્ણ સ્ક્રીનમાં હોય, ત્યારે તેના વીડિયો પર કોઈ “વીડિયો ડાઉનલોડ કરો” બટન દેખાશે નહીં"
   }
 }

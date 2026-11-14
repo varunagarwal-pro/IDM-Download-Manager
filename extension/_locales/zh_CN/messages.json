@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "原始"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "全屏时隐藏下载按钮"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "页面全屏时，视频上不会显示“下载视频”按钮"
   }
 }

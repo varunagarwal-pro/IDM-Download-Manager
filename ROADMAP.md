@@ -562,6 +562,7 @@ Bug fixes from the first days of 0.5.0, a Safari extension, and more file types.
 
 These ship in the next version.
 
+- ✅ The browser extension's popup has **Hide the download button in full screen**, off as installed: a page in full screen shows no **Download video** button, for watching without it in the way ([#670](https://github.com/anefzaoui/misterdownloadmanager/issues/670))
 - ✅ Windows: MDM listed in Settings → Default apps for MAGNET and .torrent, and Torrent
   settings' switch says when another app chosen there still opens them, and opens that page
   ([#1091](https://github.com/anefzaoui/misterdownloadmanager/issues/1091))

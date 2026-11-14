@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "original"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Skjul nedlastingsknappen i fullskjerm"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Mens siden er i fullskjerm, viser videoene ingen nedlastingsknapp"
   }
 }

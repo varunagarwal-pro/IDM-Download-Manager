@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "اصلی"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "پنهان کردن دکمه بارگیری در حالت تمام‌صفحه"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "در حالی که صفحه در حالت تمام‌صفحه است، ویدیوهای آن دکمه «بارگیری ویدیو» را نشان نمی‌دهند"
   }
 }

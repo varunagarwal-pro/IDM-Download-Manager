@@ -6178,6 +6178,10 @@ extension	Help	Hulp
 #, machine
 extension	Hide on this video	Versteek op hierdie video
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Versteek die aflaai-knoppie in volskerm
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Hou Alt in terwyl jy op 'n skakel klik om die blaaier dit te laat aflaai.
@@ -6446,6 +6450,10 @@ extension	Video	Video
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Wag 'n oomblik, probeer dan weer.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Terwyl die bladsy in volskerm is, wys sy video’s geen Aflaai video-knoppie nie
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

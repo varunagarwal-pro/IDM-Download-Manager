@@ -6178,6 +6178,10 @@ extension	Help	Hjælp
 #, machine
 extension	Hide on this video	Skjul på denne video
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Skjul downloadknappen i fuldskærm
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Hold Alt nede, mens du klikker på et link, for at lade browseren hente det.
@@ -6446,6 +6450,10 @@ extension	Video	Video
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Vent et øjeblik, og prøv derefter igen.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Mens siden er i fuldskærm, viser dens videoer ingen downloadknap
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

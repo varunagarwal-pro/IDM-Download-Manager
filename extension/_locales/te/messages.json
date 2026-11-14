@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "అసలైనది"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "పూర్తి స్క్రీన్‌లో డౌన్‌లోడ్ బటన్‌ను దాచండి"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "పేజీ పూర్తి స్క్రీన్‌లో ఉన్నప్పుడు, దాని వీడియోలపై డౌన్‌లోడ్ వీడియో బటన్ కనిపించదు"
   }
 }

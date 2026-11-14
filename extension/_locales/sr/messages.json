@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "оригинал"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Сакриј дугме за преузимање у режиму целог екрана"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Док је страница у режиму целог екрана, на њеним видео-снимцима не приказује се дугме „Преузми видео“"
   }
 }

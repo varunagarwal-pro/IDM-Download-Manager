@@ -4908,6 +4908,10 @@ extension	Help	تعليمات
 #. menu command of the download button over a video: hide the button on this video only
 extension	Hide on this video	إخفاء على هذا الفيديو
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	إخفاء زر التنزيل في وضع ملء الشاشة
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 extension	Hold Alt while clicking a link to let the browser download it.	اضغط على Alt أثناء النقر فوق ارتباط للسماح للمستعرض بتنزيله.
 #. text in the browser extension
@@ -5151,6 +5155,10 @@ extension	Video	فيديو
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	انتظر لحظة، ثم حاول مرة أخرى.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	أثناء وجود الصفحة في وضع ملء الشاشة، لا تعرض مقاطع الفيديو الخاصة بها زر تنزيل الفيديو
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

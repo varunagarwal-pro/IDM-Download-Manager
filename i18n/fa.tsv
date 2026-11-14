@@ -6170,6 +6170,10 @@ extension	Help	راهنما
 #, machine
 extension	Hide on this video	پنهان کردن در این ویدیو
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	پنهان کردن دکمه بارگیری در حالت تمام‌صفحه
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	هنگام کلیک روی پیوند، کلید Alt را نگه دارید تا مرورگر آن را بارگیری کند.
@@ -6428,6 +6432,10 @@ extension	Video	ویدیو
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	لحظه‌ای صبر کنید، سپس دوباره امتحان کنید.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	در حالی که صفحه در حالت تمام‌صفحه است، ویدیوهای آن دکمه «بارگیری ویدیو» را نشان نمی‌دهند
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

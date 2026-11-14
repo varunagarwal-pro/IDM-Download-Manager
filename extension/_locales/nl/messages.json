@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "origineel"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Downloadknop verbergen in volledig scherm"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Terwijl de pagina in volledig scherm is, tonen de video's geen downloadknop"
   }
 }

@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "oriģināls"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Paslēpt lejupielādes pogu pilnekrāna režīmā"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Kamēr lapa ir pilnekrāna režīmā, tās videoklipiem netiek rādīta lejupielādes poga"
   }
 }

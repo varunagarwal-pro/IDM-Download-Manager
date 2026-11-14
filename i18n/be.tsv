@@ -6178,6 +6178,10 @@ extension	Help	Даведка
 #, machine
 extension	Hide on this video	Схаваць для гэтага відэа
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Схаваць кнопку спампоўкі ў поўнаэкранным рэжыме
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Утрымлівайце Alt, націскаючы на спасылку, каб браўзер спампаваў яе.
@@ -6446,6 +6450,10 @@ extension	Video	Відэа
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Пачакайце крыху, потым паспрабуйце яшчэ раз.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Калі старонка знаходзіцца ў поўнаэкранным рэжыме, на яе відэа не паказваецца кнопка «Спампаваць відэа»
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

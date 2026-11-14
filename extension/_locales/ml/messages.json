@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "ഒറിജിനൽ"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "ഫുൾ സ്ക്രീനിൽ ഡൗൺലോഡ് ബട്ടൺ മറയ്ക്കുക"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "പേജ് ഫുൾ സ്ക്രീനിൽ ആയിരിക്കുമ്പോൾ, അതിലെ വീഡിയോകളിൽ ഡൗൺലോഡ് വീഡിയോ ബട്ടൺ കാണിക്കില്ല"
   }
 }

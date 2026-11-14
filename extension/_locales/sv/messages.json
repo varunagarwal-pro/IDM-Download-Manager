@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "original"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Dölj nedladdningsknappen i helskärm"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Medan sidan är i helskärm visas ingen nedladdningsknapp för dess videor"
   }
 }

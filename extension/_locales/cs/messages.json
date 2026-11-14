@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "původní"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Skrýt tlačítko stahování v režimu celé obrazovky"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Když je stránka v režimu celé obrazovky, její videa nezobrazují tlačítko Stáhnout video"
   }
 }

@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "original"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Ocultar el botón de descarga en pantalla completa"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Mientras la página está en pantalla completa, sus vídeos no muestran el botón Descargar vídeo"
   }
 }

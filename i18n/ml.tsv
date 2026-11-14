@@ -6178,6 +6178,10 @@ extension	Help	സഹായം
 #, machine
 extension	Hide on this video	ഈ വീഡിയോയിൽ മാത്രം മറയ്ക്കുക
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	ഫുൾ സ്ക്രീനിൽ ഡൗൺലോഡ് ബട്ടൺ മറയ്ക്കുക
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	ബ്രൗസറിനെക്കൊണ്ട് ഡൗൺലോഡ് ചെയ്യാൻ, ഒരു ലിങ്കിൽ ക്ലിക്ക് ചെയ്യുമ്പോൾ Alt അമർത്തിപ്പിടിക്കുക.
@@ -6446,6 +6450,10 @@ extension	Video	വീഡിയോ
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	ഒരു നിമിഷം കാത്തിരിക്കുക, തുടർന്ന് വീണ്ടും ശ്രമിക്കുക.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	പേജ് ഫുൾ സ്ക്രീനിൽ ആയിരിക്കുമ്പോൾ, അതിലെ വീഡിയോകളിൽ ഡൗൺലോഡ് വീഡിയോ ബട്ടൺ കാണിക്കില്ല
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

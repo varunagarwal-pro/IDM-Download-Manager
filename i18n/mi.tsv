@@ -6178,6 +6178,10 @@ extension	Help	Āwhina
 #, machine
 extension	Hide on this video	Huna i tēnei ataata
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Hunaia te pātene tikiake i te mata katoa
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Purihia te Alt i te wā e pāwhiri ana i tētahi hononga kia tangohia e te pūtirotiro.
@@ -6446,6 +6450,10 @@ extension	Video	Ataata
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Tatari mō tētahi wā, kātahi ka whakamātauria anō.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	I te wā e mata katoa ana te whārangi, kāore e whakaatu ana ngā ataata i te pātene Tikiake ataata
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

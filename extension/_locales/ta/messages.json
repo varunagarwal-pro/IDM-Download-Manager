@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "அசல்"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "முழுத்திரையில் பதிவிறக்க பொத்தானை மறை"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "பக்கம் முழுத்திரையில் இருக்கும்போது, அதன் வீடியோக்கள் பதிவிறக்க வீடியோ பொத்தானைக் காட்டாது"
   }
 }

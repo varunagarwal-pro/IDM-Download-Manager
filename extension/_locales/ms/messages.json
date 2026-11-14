@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "asal"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Sembunyikan butang muat turun dalam skrin penuh"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Semasa halaman dalam skrin penuh, videonya tidak menunjukkan butang Muat turun video"
   }
 }

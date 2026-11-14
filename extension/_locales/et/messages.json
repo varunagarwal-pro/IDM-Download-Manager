@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "algne"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Peida allalaadimisnupp täisekraanil"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Kui leht on täisekraanil, ei kuvata selle videote kohal nuppu „Laadi video alla”"
   }
 }

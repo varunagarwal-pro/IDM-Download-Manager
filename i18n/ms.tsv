@@ -6167,6 +6167,10 @@ extension	Help	Bantuan
 #, machine
 extension	Hide on this video	Sembunyikan pada video ini
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Sembunyikan butang muat turun dalam skrin penuh
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Pegang Alt sambil mengklik pautan untuk membiarkan penyemak imbas memuat turunnya.
@@ -6435,6 +6439,10 @@ extension	Video	Video
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Tunggu sebentar, kemudian cuba lagi.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Semasa halaman dalam skrin penuh, videonya tidak menunjukkan butang Muat turun video
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "gốc"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Ẩn nút tải xuống ở chế độ toàn màn hình"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Khi trang ở chế độ toàn màn hình, video của trang sẽ không hiển thị nút Tải xuống video"
   }
 }

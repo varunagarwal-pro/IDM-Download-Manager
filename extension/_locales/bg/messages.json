@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "оригинал"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Скриване на бутона за изтегляне в режим на цял екран"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Докато страницата е на цял екран, нейните видеоклипове не показват бутон за изтегляне на видео"
   }
 }

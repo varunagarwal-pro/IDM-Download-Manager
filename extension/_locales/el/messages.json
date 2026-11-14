@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "πρωτότυπο"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Απόκρυψη του κουμπιού λήψης σε πλήρη οθόνη"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Όταν η σελίδα είναι σε πλήρη οθόνη, τα βίντεό της δεν εμφανίζουν το κουμπί «Λήψη βίντεο»"
   }
 }

@@ -6178,6 +6178,10 @@ extension	Help	Tulong
 #, machine
 extension	Hide on this video	Itago sa video na ito
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Itago ang download button sa full screen
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Pindutin nang matagal ang Alt habang nagki-click ng link para i-download ito gamit ang browser.
@@ -6446,6 +6450,10 @@ extension	Video	Video
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Maghintay sandali, pagkatapos ay subukang muli.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Habang nasa full screen ang page, walang Download video button na ipinapakita ang mga video nito
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

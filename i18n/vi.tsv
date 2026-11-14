@@ -6173,6 +6173,10 @@ extension	Help	Trợ giúp
 #, machine
 extension	Hide on this video	Ẩn trên video này
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	Ẩn nút tải xuống ở chế độ toàn màn hình
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	Giữ phím Alt trong khi nhấp vào liên kết để trình duyệt tải xuống.
@@ -6441,6 +6445,10 @@ extension	Video	Video
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	Đợi một lát, sau đó thử lại.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	Khi trang ở chế độ toàn màn hình, video của trang sẽ không hiển thị nút Tải xuống video
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

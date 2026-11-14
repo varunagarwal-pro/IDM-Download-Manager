@@ -6178,6 +6178,10 @@ extension	Help	मदत
 #, machine
 extension	Hide on this video	ह्या व्हिडियोचेर लिपयचें
 #. text in the browser extension
+#. Option in the toolbar button's popup: while a web page is in full screen, the Download video button over its videos stays hidden
+#, machine
+extension	Hide the download button in full screen	पूर्ण स्क्रीन मोडात डाउनलोड बटण लिपयात
+#. text in the browser extension
 #. hint in the toolbar button's popup; Alt is the keyboard key
 #, machine
 extension	Hold Alt while clicking a link to let the browser download it.	ब्रावझराक डाउनलोड करपाक दिवपाक लिंक क्लिक करतना Alt धरून दवरात.
@@ -6446,6 +6450,10 @@ extension	Video	व्हिडिओ
 #. pairing failed: codes tried too fast
 #, machine
 extension	Wait a moment, then try again.	एक क्षण वाट पळयात, मागीर परतून प्रयत्न करात.
+#. text in the browser extension
+#. Tooltip of the Hide the download button in full screen option in the toolbar button's popup; Download video is the name of the button over videos
+#, machine
+extension	While the page is in full screen, its videos show no Download video button	पान पूर्ण स्क्रीन मोडात आसतना, ताच्या व्हिडियोंचेर डाउनलोड व्हिडियो बटण दिसना
 #. text in the browser extension
 #. pairing failed: the code was wrong
 #, machine

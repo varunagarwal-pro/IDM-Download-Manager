@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "asli"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "Sembunyikan tombol unduh dalam layar penuh"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "Saat halaman dalam layar penuh, videonya tidak menampilkan tombol Unduh video"
   }
 }

@@ -331,5 +331,11 @@
   },
   "video_original": {
     "message": "ኦሪጅናል"
+  },
+  "popup_video_hide_fullscreen": {
+    "message": "የማውረጃ ቁልፉን በሙሉ ማያ ገጽ ላይ ደብቅ"
+  },
+  "popup_video_hide_fullscreen_title": {
+    "message": "ገጹ በሙሉ ማያ ገጽ ላይ እያለ፣ ቪዲዮዎቹ የቪዲዮ ማውረጃ ቁልፍ አያሳዩም።"
   }
 }
