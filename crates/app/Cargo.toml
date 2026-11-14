@@ -34,6 +34,7 @@ eframe.workspace = true
 egui.workspace = true
 egui-winit.workspace = true
 egui_extras.workspace = true
+skrifa.workspace = true
 image.workspace = true
 craft-i18n.workspace = true
 # misterdownloadmanager-cli's commands: its launcher runs this program for them (main.rs).
@@ -59,7 +60,10 @@ rfd = "0.17.2"
 qrcodegen = "1.8.0"
 # Line breaks between characters keep a letter and its marks together (Thai, Khmer, Indic).
 unicode-segmentation = "1.13.3"
+# The text MDM hands to the system: isolates made into marks by each letter's direction (#919).
+unicode-bidi = "0.3.18"
 # Crash and freeze reports: the monitor, minidumps, symbolicated stacks, release logs.
+mdm-cnl.workspace = true
 mdm-crash.workspace = true
 mdm-debrid.workspace = true
 tracing.workspace = true
@@ -106,11 +110,15 @@ zbus = { version = "5.19.0", default-features = false, features = ["async-io", "
 # The settings daemon's theme name (XSETTINGS) when the portal can't say dark or light (unix.rs,
 # #156); already in the tree through winit. Its pure-Rust connection, no extension.
 x11rb = { version = "0.13.2", default-features = false }
+# The GLX vendor that will draw on the X display, before the first window (unix.rs glx_vendor,
+# renderer.rs unpaced_swaps); already in the tree through winit and glutin, loaded at run time.
+x11-dl = "2.21.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 # Finder's file icons (unix.rs file_icon); already in the tree through winit and rfd.
 objc2 = "0.6.5"
-objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSString", "NSGeometry", "objc2-core-foundation"] }
+# .torrent files and magnet links Finder hands over as Apple events (unix.rs open_events, #698).
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSString", "NSGeometry", "objc2-core-foundation", "NSAppleEventDescriptor", "NSAppleEventManager", "NSNotification", "NSURL"] }
 objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "NSWorkspace", "NSImage", "NSImageRep", "NSBitmapImageRep", "NSGraphicsContext", "NSGraphics", "objc2-core-foundation"] }
 # View → Draw with → Metal (#206, renderer.rs): eframe's wgpu renderer with wgpu's Metal backend
 # only; OpenGL stays eframe's glow, and the default. egui-wgpu's fix for windows that jitter while
