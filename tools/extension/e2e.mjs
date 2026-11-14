@@ -17,26 +17,31 @@
 // it, #578), link (a .zip link, throttled and not), ask (Firefox set to ask what to
 // do with each new type, as Waterfox is: caught before its dialog, #208), cookie (cookies and referrer
 // forwarded), names (Content-Disposition), redirect, leadon (a page going to the file by script, #374), form (POST, 303), alt (Alt+click leaves it
-// to the browser), opened (a PDF or MP3 the browser would show or play), spot (the video button
+// to the browser: a link, a redirect, a page's script; Firefox's own default too, #332), opened (a PDF or MP3 the browser would show or play), spot (the video button
 // clear of the page's controls, #421), feeds (a video in a feed sends its post, its own file, or
 // nothing and says so, never the feed: sample pages served at LinkedIn's, Facebook's, X's,
 // Instagram's, Reddit's, TikTok's, Vimeo's, Dailymotion's addresses, #689), preview (the video button kept over a hover-to-play
 // preview the page stopped as the pointer went to it, #503), steady (the video button keeping one place over
-// a preview that grows and shows its own buttons while hovered, #560), csp (the video button
+// a preview that grows and shows its own buttons while hovered, #560), player (one place over a
+// player whose settings button comes and goes as the pointer moves, #899), csp (the video button
 // under a strict CSP), hls (the stream a player loaded), streams (HLS and DASH players handed over
 // by the button, the right-click menu and the media list, and read by yt-dlp; #155; also with no
 // .m3u8 or .mpd, served as text/plain or octet-stream, #171), sniffed (#171 without yt-dlp: such
 // streams found only when asked, by the button and the media list, a text decoy never), media (the
 // toolbar button's list of the media a tab loaded: streams, files, a protected stream; #38),
 // scripted (a video a server's program sends, named after its page with its real type: the list,
-// the button, the Download video window; #695, #800),
+// the button, the Download video window; #695, #800), guarded (a stream another site's server
+// serves to its page's player only: looked up and downloaded with the Origin and Referer the
+// browser sent, #900),
 // qualities (the button's menu: a stream's qualities looked up by MDM, with their sizes; the one
 // picked downloads with its progress window only, MDM's main window hidden), page (the menu on a
 // real video page, E2E_VIDEO_PAGE, and the line E2E_VIDEO_PICK downloaded: off by default), video (shown,
 // clicked, dragged, kept; "never on the site" in the last browser; the button's clicks go through
 // its menu's "Open in…" to the Download video window, as in csp, hls, streams, sniffed and
 // inplace), panelOptions (the button follows Options in an open tab: off, on, the site listed;
-// #532), videoFocus (mouse idle/fullscreen and keyboard focus, #480), reconnect (a tab opened while
+// #532), videoFocus (mouse idle/fullscreen and keyboard focus, #480), fullscreen (one
+// button over a video in full screen, the page's or the player's, and after the extension was
+// updated while it showed, #336), reconnect (a tab opened while
 // the host couldn't start gets the button once it can, no reload; then MDM started by a click, and
 // reached after it quits and starts again, #474), start (MDM not running: the host starts it),
 // remote (Send downloads to → Another MDM, #157: paired from the popup, a link downloaded by a
@@ -752,7 +757,9 @@ async function firefox(bin, profile, dl, page, ready) {
       extension,
       serve,
       // Another add-on (the folder `dir`), temporary beside ours: its ID; and removed again.
-      install: async (dir) => (await bidi.send("webExtension.install", { extensionData: { type: "path", path: dir } })).extension,
+      // `dir` a folder, or an extensionData (ours again, as an update brings it: firefoxExtension).
+      install: async (dir) =>
+        (await bidi.send("webExtension.install", { extensionData: typeof dir === "string" ? { type: "path", path: dir } : dir })).extension,
       uninstall: (id) => bidi.send("webExtension.uninstall", { extension: id }),
       inBrowser,
       base: `moz-extension://${FIREFOX_UUID}/`,
@@ -760,6 +767,11 @@ async function firefox(bin, profile, dl, page, ready) {
       evaluate,
       mouse,
       menu,
+      // A PNG of what the tab shows (its viewport) in `file`.
+      screenshot: async (file) => {
+        const { data } = await bidi.send("browsingContext.captureScreenshot", { context });
+        fs.writeFileSync(file, Buffer.from(data, "base64"));
+      },
       navigate,
       key,
       pill,
@@ -2092,32 +2104,53 @@ const CASES = {
     return `posted again with token=abc (${posts.length} request(s)); 303: ${seen.map((e) => `${e.method} ${e.path.split("/")[1]} ${e.status}`).join(", ")}`;
   },
 
-  // Alt+click: the browser keeps the download, MDM gets nothing.
+  // Alt+click (Option+click on a Mac, #332): the browser keeps the download, MDM gets nothing. A
+  // link to the file; one that redirects to it; Firefox's family: one to a page whose script goes
+  // to the file (Chromium downloads such a link's page itself), and its default setting, where the
+  // browser alone does nothing with an Alt+click (browser.altClickSave off; the run's profile has
+  // it on, as Chromium's behaviour).
   async alt(t) {
-    const file = `e2e-alt-${t.name}.zip`;
-    const p = `/gen/1M/${file}`;
-    await t.session.navigate(`${LAB}/page?link=${encodeURIComponent(p)}`);
-    const a = await rect(t.session, "#link");
-    await t.session.mouse((a.l + a.r) / 2, (a.t + a.b) / 2, "click", { alt: true });
-    const kept = path.join(t.dl, file);
-    try {
-      await until(`${file} in the browser's folder`, 20000, () => {
-        const names = fs.readdirSync(t.dl);
-        return names.length === 1 && names[0] === file && fs.statSync(kept).size === 1 << 20;
-      });
-    } catch (e) {
+    const firefox = Boolean(t.session.inBrowser);
+    const kept = async (label, link, file) => {
+      const p = `/gen/1M/${file}`;
+      await t.session.navigate(`${LAB}/page?link=${encodeURIComponent(link)}`);
+      const a = await rect(t.session, "#link");
+      await t.session.mouse((a.l + a.r) / 2, (a.t + a.b) / 2, "click", { alt: true });
+      const at = path.join(t.dl, file);
+      try {
+        await until(`${file} in the browser's folder`, 20000, () => {
+          const names = fs.readdirSync(t.dl);
+          return names.length === 1 && names[0] === file && fs.statSync(at).size === 1 << 20;
+        });
+      } catch (e) {
+        const item = (await mdmList()).find((d) => d.file === file);
+        const tab = await t.session.evaluate("location.href").catch((x) => x.message);
+        e.message += ` (${label}; MDM: ${item ? `${item.status} ${item.path}` : "nothing"}; the tab: ${tab}; requests: ${(await requests(p)).map(brief).join("; ") || "none"}; the browser's folder: ${fs.readdirSync(t.dl).join(", ") || "empty"})`;
+        throw e;
+      }
+      await sleep(1500);
       const item = (await mdmList()).find((d) => d.file === file);
-      const tab = await t.session.evaluate("location.href").catch((x) => x.message);
-      e.message += ` (MDM: ${item ? `${item.status} ${item.path}` : "nothing"}; the tab: ${tab}; requests: ${(await requests(p)).map(brief).join("; ") || "none"}; the browser's folder: ${fs.readdirSync(t.dl).join(", ") || "empty"})`;
-      throw e;
+      if (item) throw new Error(`${label}: MDM got it too: ${item.status} ${item.path}`);
+      const all = await requests(p);
+      if (all.length !== 1) throw new Error(`${label}: ${all.length} requests for it (only the browser's expected): ${all.map(brief).join("; ")}`);
+      fs.rmSync(at);
+      return label;
+    };
+    const done = [];
+    const name = (k) => `e2e-alt-${k}-${t.name}.zip`;
+    done.push(await kept("the link", `/gen/1M/${name("link")}`, name("link")));
+    done.push(await kept("a redirect", `/redirect?to=${encodeURIComponent(`/gen/1M/${name("redirect")}`)}`, name("redirect")));
+    if (firefox) {
+      done.push(await kept("a page's script", `/leadon?to=${encodeURIComponent(`/gen/1M/${name("script")}`)}`, name("script")));
+      const pref = JSON.stringify("browser.altClickSave");
+      await t.session.inBrowser(`(Services.prefs.setBoolPref(${pref}, false), "set")`);
+      try {
+        done.push(await kept("Firefox's default (no save on Alt+click)", `/gen/1M/${name("default")}`, name("default")));
+      } finally {
+        await t.session.inBrowser(`(Services.prefs.setBoolPref(${pref}, true), "set")`).catch(() => {});
+      }
     }
-    await sleep(1500);
-    const item = (await mdmList()).find((d) => d.file === file);
-    if (item) throw new Error(`MDM got it too: ${item.status} ${item.path}`);
-    const all = await requests(p);
-    if (all.length !== 1) throw new Error(`${all.length} requests for it (only the browser's expected): ${all.map(brief).join("; ")}`);
-    fs.rmSync(kept);
-    return "the browser's own download, MDM untouched";
+    return `the browser's own download, MDM untouched: ${done.join(", ")}`;
   },
 
   // Files the browser would show or play, made downloads, MDM's (Chromium 128+, Firefox): typed
@@ -2318,6 +2351,88 @@ const CASES = {
     if (address !== `${LAB}/gen/1M/clip.mp4`) throw new Error(`the video window got ${address}`);
     await t.session.mouse(5, 5);
     return `${Math.abs(first.l - b.l) > 2 || Math.abs(first.t - b.t) > 2 ? "moved" : "stayed"} off the preview's sound button, at ${Math.round(b.l - v.l)},${Math.round(b.t - v.t)}; then still for ${seen.length} looks (8 steps there, 2.5 s on it while the preview shrank and hid its button), sent ${address.replace(LAB, "")}`;
+  },
+
+  // #899: a site's player shows its own settings button at the top right while the pointer moves
+  // over the player, and hides it a moment after the pointer stops or leaves the player (for the
+  // button, which is no part of it). The button takes a free corner once, and stays there as the
+  // pointer goes to it, rests on it, goes back over the video and stops: it never hops back to
+  // the corner the settings button hid from (0.5.2 did, every time it came and went).
+  async player(t) {
+    await t.session.navigate(`${LAB}/page?video=${encodeURIComponent("/gen/1M/clip.mp4")}`);
+    await t.session.evaluate(`(() => {
+      const v = document.querySelector("#video");
+      const box = document.createElement("div");
+      box.id = "player-box";
+      box.style.cssText = "position:relative;display:inline-block;background:#111";
+      v.replaceWith(box);
+      box.appendChild(v);
+      const gear = document.createElement("button");
+      gear.id = "player-settings";
+      gear.textContent = "settings";
+      gear.style.cssText = "position:absolute;right:8px;top:8px;width:44px;height:36px;z-index:2;display:none";
+      box.appendChild(gear);
+      let idle = 0;
+      const hide = (ms) => {
+        clearTimeout(idle);
+        idle = setTimeout(() => { gear.style.display = "none"; document.body.dataset.hidden = String(Number(document.body.dataset.hidden || 0) + 1); }, ms);
+      };
+      box.addEventListener("mousemove", () => { gear.style.display = "block"; hide(1200); });
+      box.addEventListener("mouseleave", () => hide(250));
+      return true;
+    })()`);
+    const v = await rect(t.session, "#video");
+    const mid = [(v.l + v.r) / 2, (v.t + v.b) / 2];
+    const seen = [];
+    const side = (r) => (r ? ((r.l + r.r) / 2 > mid[0] ? "right" : "left") : "gone");
+    const look = async (what) => {
+      const r = await rect(t.session, "mdm-video-button");
+      seen.push(`${what} ${side(r)}${r ? ` ${Math.round(r.l)},${Math.round(r.t)}` : ""}`);
+      return r;
+    };
+    const glide = async (from, to, steps, what) => {
+      for (let i = 1; i <= steps; i++) {
+        await t.session.mouse(from[0] + ((to[0] - from[0]) * i) / steps, from[1] + ((to[1] - from[1]) * i) / steps);
+        await sleep(60);
+        await look(`${what} ${i}`);
+      }
+    };
+    const rest = async (ms, what) => {
+      for (let n = 0; n < ms / 100; n++) {
+        await sleep(100);
+        await look(`${what} ${n}`);
+      }
+    };
+    // Over the player: its settings button shows, the button shows clear of it.
+    const first = await hover(t.session, v);
+    if (!first) throw new Error("no button over the player");
+    await until("the player's settings button", 3000, () => t.session.evaluate(`document.getElementById("player-settings").style.display === "block"`));
+    await sleep(900);
+    const b = await look("shown");
+    const gear = await rect(t.session, "#player-settings");
+    if (!b) throw new Error("the button went as the player's controls showed");
+    if (gear && b.l < gear.r && b.r > gear.l && b.t < gear.b && b.b > gear.t) throw new Error(`the button covers the player's settings button: ${JSON.stringify({ b, gear })}`);
+    // To the button, and resting on it: the player hides its settings button.
+    const on = [b.l + 14, (b.t + b.b) / 2];
+    await glide(mid, on, 8, "to it");
+    await rest(2000, "on it");
+    // Back over the video, still there while the player's controls show and hide again.
+    await glide(on, mid, 8, "back");
+    await rest(2500, "still");
+    await t.session.mouse(mid[0] + 20, mid[1] + 10);
+    await rest(800, "moved");
+    // And to it again.
+    await glide([mid[0] + 20, mid[1] + 10], on, 8, "again");
+    await rest(1500, "on it again");
+    const hid = await t.session.evaluate("Number(document.body.dataset.hidden || 0)");
+    if (hid < 2) throw new Error(`the player's settings button hid ${hid} time(s): the test's player didn't behave as the issue's`);
+    const sides = seen.map((x) => x.split(" ").find((w) => ["left", "right", "gone"].includes(w)));
+    const flips = sides.filter((x, i) => i > 0 && x !== "gone" && sides[i - 1] !== "gone" && x !== sides[i - 1]).length;
+    // Gone a moment is fine: it fades while the pointer rests still over the video (#480).
+    const kept = seen.filter((x) => !x.includes(side(b)) && !x.endsWith(" gone"));
+    if (flips || kept.length) throw new Error(`the button hopped (${flips} times): ${seen.join("; ")}`);
+    await t.session.mouse(5, 5);
+    return `took the ${side(b)} corner clear of the player's settings button, then kept it for ${seen.length} looks (to it, on it, back over the video, still, moved, on it again) while the player hid its settings button ${hid} times`;
   },
 
   // A player playing a stream (a blob: in the page): the button sends the manifest it loaded.
@@ -2742,6 +2857,78 @@ const CASES = {
     }
   },
 
+  // #900: a stream on another site's server that serves it only to its page's player: every
+  // request, its playlists' and each segment's, must carry that page's Origin and a Referer on it
+  // (the lab's /hlsg/, as a site's video server checks; 403 otherwise). The page is the lab's on
+  // localhost, the stream on 127.0.0.1. The button's look-up finds its qualities, and one picked
+  // in its menu downloads through MDM's engine to its end, every request of MDM's with what the
+  // browser sent (E2E_GUARDED_SHOT: a screenshot of the button's menu then, for a PR's body).
+  async guarded(t) {
+    if (!ytdlp) throw new Skip("no yt-dlp (E2E_YTDLP or PATH)");
+    if (!ffmpeg) throw new Skip("no ffmpeg (E2E_FFMPEG or PATH)");
+    const page = `http://localhost:${PORT}`;
+    const site = `localhost:${PORT}`;
+    await clearLog();
+    await t.session.navigate(`${page}/page?hlsg=127.0.0.1:${PORT}&title=${encodeURIComponent("A guarded stream")}`);
+    const state = await until("the stream player", 15000, () => t.session.evaluate("document.body.dataset.stream || ''"));
+    if (state !== "done") throw new Error(`the page's player: ${state} ${await t.session.evaluate("document.body.dataset.streamError || ''")}`);
+    const guarded = (x) => x.path.startsWith(`/hlsg/${site}/`);
+    const browser = (await (await fetch(`${LAB}/_log`)).json()).filter(guarded);
+    if (!browser.length || browser.some((x) => x.status !== 200)) throw new Error(`the browser's own requests: ${browser.map((x) => `${x.path} ${x.status}`).join(", ")}`);
+    // Without the page's Origin, the stream's server refuses it, as the issue's did.
+    const bare = await fetch(`${LAB}/hlsg/${site}/master.m3u8`, { headers: { Referer: `${page}/page` } });
+    if (bare.status !== 403) throw new Error(`the guarded stream answered ${bare.status} without the page's Origin`);
+    const earlier = (await mdmList()).filter((d) => d.url.startsWith(`${LAB}/hlsg/`)).map((d) => d.id);
+    if (earlier.length) await ipc({ action: "delete", ids: earlier });
+    await clearLog();
+    const v = await rect(t.session, "#player");
+    const b = await hover(t.session, v);
+    if (!b) throw new Error("no button over the stream's player");
+    const before = new Set((await mdmList()).map((d) => d.id));
+    const mdm = async () => (await (await fetch(`${LAB}/_log`)).json()).filter(guarded);
+    const refused = async () => (await mdm()).filter((x) => x.status !== 200).map((x) => `${x.path} ${x.status} (origin ${x.origin || "none"}, referer ${x.referer || "none"})`);
+    // The look-up: its chip names the best quality (a failed one names none).
+    let last = null;
+    const pill = await until("the best quality on the button's chip", 60000, async () => {
+      last = await t.session.pill(PILL_STATE);
+      return last && last.state === "ready" && last.chip ? last : null;
+    }).catch(async () => {
+      throw new Error(`no quality found (the button: ${last && last.state} "${last && last.text}"); the stream's server refused: ${(await refused()).join(", ") || "nothing"}`);
+    });
+    // Its menu: the sound's "original" line, one stream, downloaded by MDM's engine to its end
+    // (no merge: the lab's tracks carry sound only, which yt-dlp's merge with some ffmpeg
+    // builds refuses, whatever the request).
+    await clickArrow(t.session);
+    const m = await until("the qualities in the menu", 30000, async () => {
+      const p = await t.session.picks("row");
+      return p && p.rows.length ? p : null;
+    });
+    if (process.env.E2E_GUARDED_SHOT && t.session.shot) {
+      await sleep(400);
+      await t.session.shot(process.env.E2E_GUARDED_SHOT, { l: Math.min(v.l, m.box.l) - 10, t: Math.min(v.t, m.box.t) - 10, r: Math.max(v.r, m.box.r) + 10, b: Math.max(v.b, m.box.b) + 10 });
+    }
+    const row = m.rows.find((r) => r.kind === "audio" && /original/i.test(r.name));
+    if (!row) throw new Error(`no original sound in the menu: ${JSON.stringify(m.rows.map((r) => r.name))}`);
+    await t.session.mouse(row.x, row.y, "click");
+    const item = await until("the stream, in MDM's list", 60000, async () => (await mdmList()).find((d) => !before.has(d.id)));
+    const done = await until("the download's end", 120000, async () => {
+      const d = (await mdmList()).find((x) => x.id === item.id);
+      if (d && d.status === "Error") throw new Error(`the download failed: ${d.error}; refused: ${(await refused()).join(", ")}`);
+      return d && d.status === "Complete" ? d : null;
+    });
+    // Every request of MDM's (yt-dlp's look-up and the engine's playlists and segments): 200,
+    // with the page's Origin and Referer.
+    const asked = await mdm();
+    const segments = asked.filter((x) => x.path.endsWith(".ts"));
+    const bad = await refused();
+    if (bad.length) throw new Error(`refused: ${bad.join(", ")}`);
+    const lacking = asked.filter((x) => x.origin !== page || !(x.referer || "").startsWith(`${page}/`));
+    if (lacking.length) throw new Error(`without the page's Origin and Referer: ${lacking.map((x) => `${x.path} (${x.origin}, ${x.referer})`).join(", ")}`);
+    if (segments.length < 3) throw new Error(`only ${segments.length} segments asked for: ${asked.map((x) => x.path).join(", ")}`);
+    await t.session.mouse(5, 5);
+    return `chip "${pill.chip}"; "${row.name}" picked: ${done.file} (${fs.statSync(done.path).size} bytes); MDM's ${asked.length} requests (${asked.length - segments.length} playlists, ${segments.length} segments) all 200 with Origin ${page} and its Referer`;
+  },
+
   // E2E_VIDEO_PAGE=<a video's page>: the button's qualities' menu on a real site (a pull
   // request's screenshots and its real check; the network's, so never by default): the lines the
   // menu shows, then, with E2E_VIDEO_PICK=<a pattern of a line's words>, that line picked and
@@ -2815,6 +3002,110 @@ const CASES = {
     // Headless Firefox refuses the player's fullscreen request and Tab's focus on it here.
     if (t.kind === "firefox") throw new Skip("headless Firefox denies fullscreen and keyboard focus to the test page");
     return videoFocus(t.session);
+  },
+
+  // #336: one video, one button, in full screen too. As YouTube does in Firefox, the whole page
+  // goes full screen (<html>), then a player's own element; out again. Then (Firefox's family) the
+  // extension updated while its button shows: Firefox gives the new copy a world of its own, and
+  // the old copy's button stayed on the page, frozen, beside the new one.
+  async fullscreen(t) {
+    const s = t.session;
+    const firefox = Boolean(s.inBrowser);
+    // Headless Firefox grants full screen only to a page whose window has the focus, which it
+    // gives when its window is told to take it (again after each full screen).
+    const focus = () =>
+      firefox &&
+      s.inBrowser(`(() => { window.focus(); Services.focus.activeWindow = window; gBrowser.selectedBrowser.focus(); return Services.focus.activeWindow === window; })()`);
+    if (firefox) {
+      await focus();
+      await s.inBrowser(`(Services.prefs.setIntPref("full-screen-api.warning.timeout", 0), Services.prefs.setCharPref("full-screen-api.transition-duration.enter", "0 0"), Services.prefs.setCharPref("full-screen-api.transition-duration.leave", "0 0"), Services.prefs.setBoolPref("full-screen-api.allow-trusted-requests-only", false), "set")`);
+    }
+    await s.navigate(`${LAB}/page?video=${encodeURIComponent("/gen/1M/clip.mp4")}`);
+    await s.evaluate(`(() => {
+      const v = document.querySelector("#video");
+      const player = document.createElement("div");
+      player.id = "fs-player";
+      player.style.cssText = "width:640px;height:360px;background:#18212d;margin-top:40px";
+      v.before(player);
+      player.append(v);
+      v.controls = false;
+      v.style.cssText = "width:100%;height:100%";
+      // Room to scroll: a frozen button stays where it was as the video moves.
+      document.body.style.minHeight = "2000px";
+      return true;
+    })()`);
+    // The buttons on the page (shown or not), and how many show.
+    const count = () =>
+      s.evaluate(`(() => { const all = [...document.querySelectorAll("mdm-video-button")];
+        return { all: all.length, shown: all.filter((b) => b.style.getPropertyValue("display") === "block").length }; })()`);
+    const one = async (when) => {
+      const v = await rect(s, "#video");
+      if (!(await hover(s, v))) throw new Error(`${when}: no button over the video ${JSON.stringify(v)}, ${JSON.stringify(await count())}`);
+      // One on the page (a button left by an old copy counts, shown or not), never two shown.
+      await sleep(300);
+      const n = await count();
+      if (n.shown > 1 || n.all !== 1) {
+        const where = await s.evaluate(`[...document.querySelectorAll("mdm-video-button")].map((b) => [b.parentNode.localName + "#" + b.parentNode.id, b.style.getPropertyValue("display"), b.style.getPropertyValue("transform")].join(" ")).join("; ") + " | fs: " + (document.fullscreenElement ? document.fullscreenElement.localName + "#" + document.fullscreenElement.id : "none")`);
+        throw new Error(`${when}: ${n.shown} buttons shown, ${n.all} on the page (${where})`);
+      }
+    };
+    const enter = async (sel) => {
+      // Firefox may refuse a request that comes right after leaving full screen: asked again.
+      let r = "";
+      for (let i = 0; i < 5; i++) {
+        await focus();
+        r = await s.evaluate(`document.querySelector(${JSON.stringify(sel)}).requestFullscreen().then(() => document.fullscreenElement.localName, (e) => "refused: " + e)`);
+        if (!/^refused/.test(r)) break;
+        await sleep(1000);
+      }
+      if (/^refused/.test(r)) throw new Error(`full screen (${sel}) ${r}`);
+      await sleep(500);
+    };
+    const leave = async () => {
+      await s.evaluate("document.exitFullscreen().then(() => true, () => false)");
+      await until("the page out of full screen", 5000, () => s.evaluate("!document.fullscreenElement"));
+      await sleep(500);
+    };
+    const done = [];
+    await one("before full screen");
+    await enter("html");
+    await one("the page in full screen");
+    await leave();
+    await one("back from the page's full screen");
+    await enter("#fs-player");
+    await one("the player in full screen");
+    await leave();
+    await one("back from the player's full screen");
+    done.push("one button in and out of full screen (the page's, the player's)");
+    if (firefox) {
+      // The extension updated while its button shows over the video in full screen.
+      await enter("html");
+      const v = await rect(s, "#video");
+      if (!(await hover(s, v))) throw new Error("no button before the update");
+      // Shown a while (its look-up done, the copy idle), the pointer still moving over it.
+      for (let i = 0; i < 8; i++) {
+        await s.mouse((v.l + v.r) / 2 + (i % 2), (v.t + v.b) / 2);
+        await sleep(200);
+      }
+      await s.uninstall(s.extension);
+      s.extension = await s.install(firefoxExtension);
+      await sleep(1500);
+      // E2E_SHOTS: <browser>-fullscreen-update.png, the page in full screen with the button(s).
+      if (process.env.E2E_SHOTS) {
+        const dir = path.resolve(process.env.E2E_SHOTS);
+        fs.mkdirSync(dir, { recursive: true });
+        await s.evaluate("(scrollBy(0, 120), true)");
+        await sleep(300);
+        await hover(s, await rect(s, "#video"));
+        await sleep(400);
+        await s.screenshot(path.join(dir, `${t.name}-fullscreen-update.png`));
+      }
+      await one("after the extension was updated, in full screen");
+      await leave();
+      await one("after the update, out of full screen");
+      done.push("one after the extension was updated while it showed");
+    }
+    return done.join("; ");
   },
 
   // #689: the sample feeds at their sites' addresses (served by the browser's protocol).
